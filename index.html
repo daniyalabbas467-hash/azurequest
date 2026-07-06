@@ -340,6 +340,19 @@
     .cheat-block code{color:#000;background:#eee}
     .card h2,.cheat-block h3{color:#000}
   }
+  /* profiles */
+  .modal-wrap{position:fixed;inset:0;background:rgba(4,8,20,.72);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:97;display:none;align-items:flex-start;justify-content:center;padding:46px 16px;overflow:auto}
+  .modal-wrap.show{display:flex}
+  .modal-wrap .card{max-width:540px;width:100%;margin:0}
+  .av-row{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+  .av-btn{width:44px;height:44px;border-radius:12px;border:2px solid var(--line);background:var(--bg2);font-size:22px;cursor:pointer;transition:.12s}
+  .av-btn:hover{transform:translateY(-2px)}
+  .av-btn.sel{border-color:var(--gold);background:#2a2410}
+  .prof-row{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg2);margin-bottom:8px}
+  .prof-row .pr-av{font-size:24px}
+  .prof-row .pr-name{flex:1;font-weight:700}
+  .prof-row .pr-name small{display:block;color:var(--muted);font-weight:500;font-size:11px}
+  .name-input{background:var(--bg2);border:1px solid var(--line);color:var(--text);border-radius:12px;padding:11px 14px;font-size:15px;font-weight:600;min-width:200px;flex:1}
   /* in-app confirm bar (works where browser dialogs are blocked) */
   .confirm-bar{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(140px);z-index:100;
     background:var(--card2);border:1px solid var(--accent);border-radius:16px;padding:14px 18px;box-shadow:var(--shadow);
@@ -363,6 +376,7 @@
       <div class="stat">⭐<div><span class="n" id="xp">0</span><small>total XP</small></div></div>
       <div class="stat">🏅<div><span class="n" id="level">1</span><small>level</small></div></div>
       <div class="stat">🎯<div><span class="n" id="daydone">0/3</span><small>today's goals</small></div></div>
+      <div class="stat" id="prof-chip" style="cursor:pointer" title="Profiles — switch or personalize">👤<div><span class="n" id="prof-chip-name" style="font-size:14px">Learner</span><small>profile</small></div></div>
       <div class="stat" id="study-chip" style="cursor:pointer" title="Study timer — click to start/pause. 30 min completes your daily study goal.">⏱<div><span class="n" id="study-time">0:00</span><small id="study-lbl">study timer</small></div></div>
       <div class="stat" id="sound-chip" style="cursor:pointer" title="Toggle sound effects">🔊<div><small style="margin-top:4px">sound</small></div></div>
     </div>
@@ -383,6 +397,15 @@
 
   <!-- HOME -->
   <section id="tab-home">
+    <div class="card hidden" id="welcome-card" style="border-color:var(--accent);margin-bottom:18px">
+      <h2>👋 Welcome to AzureQuest!</h2>
+      <div class="sub">What should we call you? Your name personalizes your journey and shows on your scorecards. (Stays on this device — nothing is sent anywhere.)</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <input class="name-input" id="welcome-name" maxlength="24" placeholder="Your name">
+        <button class="btn" onclick="saveWelcome()">Let's go →</button>
+      </div>
+      <div class="av-row" id="welcome-avs"></div>
+    </div>
     <div class="grid grid2">
       <div class="card">
         <h2>🎯 Today's Goals</h2>
@@ -778,6 +801,22 @@
 <canvas id="fireflies"></canvas>
 <canvas id="confetti-c"></canvas>
 <div class="toast" id="toast"></div>
+<div class="modal-wrap" id="profile-modal">
+  <div class="card">
+    <div class="q-top"><h2 style="margin:0">👤 Profiles</h2><button class="btn ghost" style="padding:7px 13px" onclick="closeProfiles()">✕ Close</button></div>
+    <div class="sub" style="margin-top:6px">Each profile has its own XP, streaks and progress — great if family or friends share this device. Everything stays local in this browser.</div>
+    <h3 style="font-size:15px;margin:14px 0 4px">This profile</h3>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <input class="name-input" id="prof-name-input" maxlength="24" placeholder="Display name">
+      <button class="btn blue" onclick="saveProfileEdits()">Save</button>
+    </div>
+    <div class="av-row" id="prof-avs"></div>
+    <h3 style="font-size:15px;margin:16px 0 8px">All profiles on this device</h3>
+    <div id="prof-list"></div>
+    <button class="btn ghost" onclick="addProfile()" style="margin-top:6px">➕ New profile</button>
+  </div>
+</div>
+
 <div class="confirm-bar" id="confirm-bar">
   <span class="cb-msg" id="cb-msg"></span>
   <button class="btn" id="cb-yes" style="padding:8px 16px;font-size:13px">Confirm</button>
@@ -785,7 +824,16 @@
 </div>
 
 <script>
-const SKEY='azurequest_v1';
+/* ---------- PROFILES (local, per-device) ---------- */
+const PROFS_KEY='azurequest_profiles';
+let PROFS=(function(){
+  try{const p=JSON.parse(localStorage.getItem(PROFS_KEY));if(p&&p.list&&p.list.length&&p.active)return p;}catch(e){}
+  return {list:[{id:'p1',name:'',avatar:'☁️'}],active:'p1'};
+})();
+function saveProfs(){try{localStorage.setItem(PROFS_KEY,JSON.stringify(PROFS));}catch(e){}}
+function profKey(id){return id==='p1'?'azurequest_v1':'azurequest_v1_'+id;} // p1 keeps the legacy key so old progress survives
+function activeProf(){return PROFS.list.find(p=>p.id===PROFS.active)||PROFS.list[0];}
+const SKEY=profKey(PROFS.active);
 /* ---------- CERT REGISTRY ---------- */
 const CERTS={
   az900:{name:'AZ-900',full:'Azure Fundamentals',ico:'☁️'},
@@ -3146,6 +3194,89 @@ function renderExamDay(){
   });
 }
 
+/* ---------- PROFILE UI ---------- */
+const AVATARS=['☁️','🚀','📊','📈','🤖','🛡️','🦊','🐼','🦁','🐧','🐸','⭐'];
+let pickedAv=null;
+function renderAvRow(boxId,current){
+  const box=document.getElementById(boxId);if(!box)return;
+  box.innerHTML='';
+  AVATARS.forEach(av=>{
+    const b=document.createElement('button');
+    b.className='av-btn'+((pickedAv||current)===av?' sel':'');
+    b.textContent=av;
+    b.onclick=()=>{pickedAv=av;renderAvRow(boxId,current);};
+    box.appendChild(b);
+  });
+}
+function renderProfileBits(){
+  const p=activeProf();
+  const chip=document.getElementById('prof-chip-name');
+  if(chip)chip.textContent=p.name||'Learner';
+  const who=document.getElementById('whoami');
+  if(who)who.textContent=(p.name?p.name+'’s':'Your')+' Microsoft cert journey · 6 certs';
+  const wc=document.getElementById('welcome-card');
+  if(wc)wc.classList.toggle('hidden',!!p.name);
+}
+function saveWelcome(){
+  const nm=(document.getElementById('welcome-name').value||'').trim();
+  if(!nm){toast('Type a name first 🙂');return;}
+  const p=activeProf();
+  p.name=nm; if(pickedAv)p.avatar=pickedAv;
+  saveProfs(); pickedAv=null;
+  renderProfileBits(); confettiBurst(); sfx('win');
+  toast('Welcome aboard, '+nm+'! 🎉');
+}
+function openProfiles(){
+  pickedAv=null;
+  document.getElementById('prof-name-input').value=activeProf().name||'';
+  renderAvRow('prof-avs',activeProf().avatar);
+  renderProfList();
+  document.getElementById('profile-modal').classList.add('show');
+}
+function closeProfiles(){document.getElementById('profile-modal').classList.remove('show');}
+function saveProfileEdits(){
+  const nm=(document.getElementById('prof-name-input').value||'').trim();
+  const p=activeProf();
+  if(nm)p.name=nm; if(pickedAv)p.avatar=pickedAv;
+  saveProfs(); pickedAv=null;
+  renderProfileBits(); renderProfList(); toast('✅ Profile updated');
+}
+function renderProfList(){
+  const box=document.getElementById('prof-list');if(!box)return;
+  box.innerHTML='';
+  PROFS.list.forEach(p=>{
+    let xp=0; try{const s=JSON.parse(localStorage.getItem(profKey(p.id)));if(s)xp=s.xp||0;}catch(e){}
+    const row=document.createElement('div');row.className='prof-row';
+    const isActive=p.id===PROFS.active;
+    row.innerHTML=`<div class="pr-av">${p.avatar}</div>
+      <div class="pr-name">${p.name||'Unnamed'}${isActive?' <span class="pill az900">active</span>':''}<small>Level ${lvl(xp)} · ${xp} XP</small></div>
+      ${isActive?'':'<button class="weak-drill" data-a="switch">Switch</button>'}
+      ${PROFS.list.length>1&&!isActive?'<button class="weak-drill" data-a="del" style="color:var(--red)">🗑</button>':''}`;
+    const sw=row.querySelector('[data-a=switch]');
+    if(sw)sw.onclick=()=>switchProfile(p.id);
+    const del=row.querySelector('[data-a=del]');
+    if(del)del.onclick=()=>deleteProfile(p.id);
+    box.appendChild(row);
+  });
+}
+function switchProfile(id){
+  PROFS.active=id; saveProfs(); location.reload();
+}
+function addProfile(){
+  const id='p'+Date.now().toString(36);
+  PROFS.list.push({id,name:'',avatar:AVATARS[Math.floor(Math.random()*AVATARS.length)]});
+  PROFS.active=id; saveProfs(); location.reload(); // fresh profile boots to the welcome card
+}
+function deleteProfile(id){
+  const p=PROFS.list.find(x=>x.id===id);if(!p)return;
+  appConfirm('Delete profile "'+(p.name||'Unnamed')+'" and ALL its progress? This cannot be undone.',()=>{
+    try{localStorage.removeItem(profKey(id));}catch(e){}
+    PROFS.list=PROFS.list.filter(x=>x.id!==id);
+    if(PROFS.active===id)PROFS.active=PROFS.list[0].id;
+    saveProfs(); renderProfList(); toast('Profile deleted');
+  });
+}
+
 /* ---------- SHAREABLE SCORECARD (canvas PNG for WhatsApp) ---------- */
 let LASTEX=null;
 function shareScore(){
@@ -3162,7 +3293,8 @@ function shareScore(){
   cx.font='800 44px "Nunito","Segoe UI",sans-serif';
   cx.fillText('☁️ AzureQuest — Mock Exam',500,86);
   cx.font='700 30px "Nunito","Segoe UI",sans-serif'; cx.fillStyle='#93a0c4';
-  cx.fillText(EXAM_CFG[r.cert].name+' · '+CERTS[r.cert].full,500,138);
+  const nm=activeProf().name;
+  cx.fillText(EXAM_CFG[r.cert].name+' · '+CERTS[r.cert].full+(nm?' · '+nm:''),500,138);
   cx.font='900 130px "Nunito","Segoe UI",sans-serif';
   cx.fillStyle=r.passed?'#58cc02':'#ffc800';
   cx.fillText(r.scaled+' / 1000',500,300);
@@ -3493,6 +3625,10 @@ document.getElementById('imp-file').onchange=(e)=>{
   e.target.value='';
 };
 renderCardChips();
+// profiles
+document.getElementById('prof-chip').onclick=openProfiles;
+renderAvRow('welcome-avs',activeProf().avatar);
+renderProfileBits();
 renderTip();
 render();
 renderCurriculum();
