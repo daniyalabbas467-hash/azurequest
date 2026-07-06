@@ -18,7 +18,7 @@ No install, no sign-up, no server. Open the link (or download `index.html` and d
 ## ✨ What's inside
 
 - **Guided lessons** — bite-sized cards with analogies and exam tips, each followed by a quick-check question
-- **Practice quizzes** — 170+ questions with instant feedback and explanations, drillable by topic
+- **Practice quizzes** — 260+ questions with instant feedback and explanations, drillable by topic
 - **Timed mock exams** — scored to 700/1000 like the real thing, with per-domain breakdowns
 - **Flashcards & study sessions** — searchable glossary plus a know/again-later review deck
 - **Hands-on labs** — step-by-step Azure portal and Power BI Desktop exercises
