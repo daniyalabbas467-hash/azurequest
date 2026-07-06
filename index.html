@@ -522,6 +522,12 @@
       </div>
     </div>
 
+    <div class="card" id="chest-card" style="margin-top:18px;border-color:var(--gold)">
+      <h2>🎁 Daily Challenge Chest <span class="pill boss" id="chest-streak" style="margin-left:6px">🔥 0</span></h2>
+      <div class="sub">One question a day, picked from your tracked certs. Crack it: <b>+25 XP</b>. Miss it: +5 for courage. Win streaks earn the Chest Hunter badge.</div>
+      <div id="chest-body"></div>
+    </div>
+
     <div class="card" id="ready-card" style="margin-top:18px">
       <h2>🎓 Exam Readiness</h2>
       <div class="sub">Combines your curriculum progress, quiz accuracy, and mock exam scores. 85%+ = book the real exam.</div>
@@ -738,11 +744,11 @@
           </div>
           <div class="quiz-card" onclick="startExam('ai900')">
             <div class="qc-ico">🤖</div><div class="qc-name">AI-900 Mock Exam</div>
-            <div class="qc-desc">24 questions · 35 min · pass = 700/1000</div>
+            <div class="qc-desc">30 questions · 42 min · pass = 700/1000</div>
           </div>
           <div class="quiz-card" onclick="startExam('sc900')">
             <div class="qc-ico">🛡️</div><div class="qc-name">SC-900 Mock Exam</div>
-            <div class="qc-desc">24 questions · 35 min · pass = 700/1000</div>
+            <div class="qc-desc">30 questions · 42 min · pass = 700/1000</div>
           </div>
           <div class="quiz-card boss-card" onclick="startExam('boss')">
             <div class="qc-ico">👑</div><div class="qc-name">GRAND MOCK — Boss Battle</div>
@@ -933,7 +939,10 @@
     <div class="btype-grid" id="buddy-types"></div>
     <h3 style="font-size:14px;margin:10px 0 0">Color</h3>
     <div class="hue-row" id="buddy-hues"></div>
-    <button class="btn blue" onclick="saveBuddy()" style="margin-top:8px">Save buddy ✓</button>
+    <h3 style="font-size:14px;margin:10px 0 4px">Voice</h3>
+    <button class="voice-btn" id="buddy-voice-btn" onclick="toggleBuddyVoice()">🔇 Buddy speaks: Off</button>
+    <div class="cd-label" style="margin-top:12px">✨ Your buddy <b>evolves</b> as you level up: 🎀 bowtie at level 5 · 😎 sunglasses at 10 · 🎓 graduation cap at 15 · 👑 crown at 20</div>
+    <button class="btn blue" onclick="saveBuddy()" style="margin-top:10px">Save buddy ✓</button>
   </div>
 </div>
 
@@ -1588,6 +1597,119 @@ const QUESTIONS=[
   {cert:'sc900',topic:'Compliance',q:'Classification that travels WITH a document, applying encryption/watermarks, is:',o:['A sensitivity label','A retention policy','An access review','A UDR'],a:0,e:'Sensitivity labels persist protection wherever the file goes.'},
   {cert:'sc900',topic:'Compliance',q:'Keeping records for 7 years then auto-deleting them uses:',o:['Retention policies','DLP','PIM','Peering'],a:0,e:'Retention policies govern the keep/delete lifecycle of content.'},
   {cert:'sc900',topic:'Compliance',q:'Searching and legally holding content for litigation is:',o:['eDiscovery','Insider risk','Secure score','SSPR'],a:0,e:'eDiscovery finds, holds, and exports content for legal matters.'},
+  /* ===== 100+ wave ===== */
+  {cert:'az900',topic:'Cloud Concepts',q:'Lifting existing on-prem VMs into Azure with minimal changes uses which service type?',o:['SaaS','PaaS','IaaS','FaaS'],a:2,e:'Lift-and-shift = run the same VMs in the cloud = IaaS.'},
+  {cert:'az900',topic:'Cloud Concepts',q:'The ability to deploy and iterate quickly as business needs change is called:',o:['Agility','Redundancy','Latency','Compliance'],a:0,e:'Agility = rapid provisioning and change — a core cloud benefit.'},
+  {cert:'az900',topic:'Cloud Concepts',q:'Which tool estimates savings of MOVING on-prem workloads to Azure?',o:['Pricing Calculator','TCO Calculator','Azure Monitor','Advisor'],a:1,e:'The Total Cost of Ownership calculator compares on-prem costs vs Azure.'},
+  {cert:'az900',topic:'Cloud Concepts',q:'Adding more VM instances to share load is called:',o:['Scaling up','Scaling out (horizontal)','Failing over','Archiving'],a:1,e:'Scale out = more instances; scale up = a bigger instance.'},
+  {cert:'az900',topic:'Architecture & Services',q:'Which service orchestrates large fleets of containers?',o:['Azure Kubernetes Service','Blob storage','Azure DNS','Key Vault'],a:0,e:'AKS is the managed Kubernetes container orchestrator.'},
+  {cert:'az900',topic:'Architecture & Services',q:'The Azure Marketplace lets you:',o:['Buy physical servers','Deploy third-party and Microsoft solutions/images into your subscription','Book exams','Chat with support'],a:1,e:'Marketplace offers certified images and solutions deployable straight into Azure.'},
+  {cert:'az900',topic:'Architecture & Services',q:'Deploying VMs across availability ZONES mainly increases:',o:['Cost only','Availability (survives a datacenter failure)','Latency','Storage'],a:1,e:'Zone-spread VMs keep running if one datacenter fails — higher SLA.'},
+  {cert:'az900',topic:'Architecture & Services',q:'Managed disks in Azure are used for:',o:['VM operating system and data storage','Email','DNS records','Billing'],a:0,e:'Managed disks are the block storage behind VM OS and data drives.'},
+  {cert:'az900',topic:'Architecture & Services',q:'An Azure DNS zone contains:',o:['VM backups','The DNS records for a domain','Blob containers','Subscriptions'],a:1,e:'DNS zones host A/CNAME/MX records for your domains.'},
+  {cert:'az900',topic:'Management & Governance',q:'Microsoft Entra ID is best described as:',o:['A cloud-based identity and access management service','A firewall','A storage tier','A VM size'],a:0,e:'Entra ID handles identities, sign-in, and access in the cloud.'},
+  {cert:'az900',topic:'Management & Governance',q:'An Azure Policy can automatically ADD required tags using which effect?',o:['Deny only','Append/Modify','Delete','Reboot'],a:1,e:'Append/Modify effects can add or fix properties like tags on resources.'},
+  {cert:'az900',topic:'Management & Governance',q:'Combining multiple services in one app means the overall SLA is:',o:['Higher than each','The product — slightly LOWER than each individual SLA','Always 100%','Irrelevant'],a:1,e:'Composite SLA multiplies: 99.9% × 99.9% ≈ 99.8%.'},
+  {cert:'az900',topic:'Management & Governance',q:'Azure\'s free account and always-free services exist so you can:',o:['Run production for free forever','Learn and prototype without cost','Avoid governance','Skip identity'],a:1,e:'Free credits + always-free tiers are for learning and evaluation — perfect for labs.'},
+  {cert:'az900',topic:'Management & Governance',q:'Which support plan is included free with every subscription?',o:['Basic','Developer','Standard','Professional Direct'],a:0,e:'Basic support (billing, docs, community) is free for all.'},
+  {cert:'az900',topic:'Architecture & Services',q:'Which Azure service provides a fully managed message QUEUE between app components?',o:['Queue Storage / Service Bus','Blob tiers','Azure Files','Bastion'],a:0,e:'Queue Storage and Service Bus decouple components with reliable messaging.'},
+  {cert:'az104',topic:'Identity & Governance',q:'Which tool synchronizes on-premises AD users into Entra ID?',o:['Microsoft Entra Connect','AzCopy','Site Recovery','Network Watcher'],a:0,e:'Entra Connect performs hybrid identity synchronization.'},
+  {cert:'az104',topic:'Identity & Governance',q:'No built-in role fits your needs. You create:',o:['A second subscription','A custom RBAC role with specific actions','A tag','A lock'],a:1,e:'Custom roles define exact allowed actions when built-ins don\'t fit.'},
+  {cert:'az104',topic:'Identity & Governance',q:'Who deleted that resource group yesterday? Check:',o:['The Activity Log','A SAS token','The pricing calculator','Blob versioning'],a:0,e:'The Activity Log records control-plane operations: who did what, when.'},
+  {cert:'az104',topic:'Identity & Governance',q:'Reorganizing governance means moving a subscription to another management group. This is:',o:['Impossible','Supported from the management groups blade','Only via support ticket','Data loss'],a:1,e:'Subscriptions move freely between management groups.'},
+  {cert:'az104',topic:'Storage',q:'Regulators require blobs that can NEVER be modified or deleted for 5 years. Use:',o:['Cool tier','Immutable storage (WORM) with a time-based retention policy','A CanNotDelete lock','LRS'],a:1,e:'Immutability policies enforce write-once-read-many at the container level.'},
+  {cert:'az104',topic:'Storage',q:'Azure File Sync cloud tiering does what?',o:['Encrypts shares','Keeps hot files local and tiers cold files to Azure, freeing server disk','Deletes old files','Converts SMB to NFS'],a:1,e:'Cloud tiering keeps a local cache and pushes cold data to the cloud share.'},
+  {cert:'az104',topic:'Storage',q:'A workload needs very high transaction rates and consistent low latency on blobs. Choose:',o:['Archive tier','Premium block blob storage account','GRS standard','A file share'],a:1,e:'Premium (SSD-backed) block blob accounts serve high-transaction, low-latency workloads.'},
+  {cert:'az104',topic:'Compute',q:'Run a post-deployment configuration script on a VM using:',o:['A VM extension (Custom Script)','A DNS record','A budget','Blob versioning'],a:0,e:'VM extensions (like Custom Script) automate in-guest configuration.'},
+  {cert:'az104',topic:'Compute',q:'Share a standardized VM image across teams and regions with:',o:['Screenshots','Azure Compute Gallery','A SAS token','A resource lock'],a:1,e:'Compute Gallery versions and replicates images for reuse.'},
+  {cert:'az104',topic:'Compute',q:'Container Instances bill you:',o:['Monthly flat fee','Per second while the container runs','Per user','Per DNS query'],a:1,e:'ACI is per-second billing for CPU/memory while running.'},
+  {cert:'az104',topic:'Networking',q:'An NSG on the SUBNET and another on the NIC — traffic must be allowed by:',o:['Either one','BOTH (subnet then NIC inbound)','Neither','Only the NIC'],a:1,e:'Inbound traffic is evaluated subnet-NSG first, then NIC-NSG — both must allow it.'},
+  {cert:'az104',topic:'Networking',q:'A DNS A record must point at your VM permanently. Its public IP should be:',o:['Dynamic','Static','Deleted','IPv6 only'],a:1,e:'Dynamic IPs change on stop/deallocate — static IPs keep DNS valid.'},
+  {cert:'az104',topic:'Networking',q:'Two subnets in one VNet:',o:['May overlap addresses','Must have non-overlapping address ranges','Must be /16','Need a gateway between them'],a:1,e:'Subnets carve the VNet space into non-overlapping ranges; routing between them is automatic.'},
+  {cert:'az104',topic:'Networking',q:'Compared to NSGs, Azure Firewall adds:',o:['Nothing','Centralized stateful filtering with FQDN/application rules and threat intel','Only cheaper pricing','VM backups'],a:1,e:'Azure Firewall is a managed, centralized L3–L7 firewall; NSGs are per-subnet/NIC allow-deny lists.'},
+  {cert:'az104',topic:'Monitor & Backup',q:'CPU% from INSIDE the guest OS (memory, disk queue) requires:',o:['Nothing','The Azure Monitor Agent / diagnostics extension','A public IP','GRS'],a:1,e:'Guest-level metrics need the monitoring agent; host metrics come free.'},
+  {cert:'az104',topic:'Monitor & Backup',q:'An action group can trigger all EXCEPT:',o:['Email/SMS','A webhook or Azure Function','An automation runbook','Formatting your laptop'],a:3,e:'Action groups notify and automate via email, SMS, webhooks, Functions, runbooks, ITSM.'},
+  {cert:'az104',topic:'Monitor & Backup',q:'Backup retention after deleting a VM:',o:['Backups vanish instantly','Recovery points remain in the vault per policy (soft delete protects them)','Backups move to DNS','Nothing existed'],a:1,e:'Vault soft delete keeps recovery points even after workload deletion.'},
+  {cert:'dp900',topic:'Core Data Concepts',q:'Choose a data LAKE over a warehouse when you need:',o:['Only modeled tables','Cheap storage of raw, mixed-format files for later processing','Faster dashboards only','Strict schemas upfront'],a:1,e:'Lakes store raw/varied data cheaply (schema-on-read); warehouses hold modeled tables.'},
+  {cert:'dp900',topic:'Core Data Concepts',q:'CSV files are best suited for:',o:['Complex nested data','Simple tabular data interchange','Video','Graph traversals'],a:1,e:'CSV = rows/columns of text — universal but flat and untyped.'},
+  {cert:'dp900',topic:'Relational Data',q:'A LEFT JOIN returns:',o:['Only matching rows','All left-table rows, with NULLs where the right table has no match','Only right rows','Random rows'],a:1,e:'LEFT JOIN preserves every left row whether or not it matches.'},
+  {cert:'dp900',topic:'Relational Data',q:'Many small databases with varying load can share resources cost-effectively via:',o:['An elastic pool','One giant VM','Blob storage','A DNS zone'],a:0,e:'Azure SQL elastic pools share compute across databases with bursty usage.'},
+  {cert:'dp900',topic:'Relational Data',q:'Azure SQL serverless tier can:',o:['Never pause','Auto-pause when idle and bill only storage','Run only on-prem','Skip backups'],a:1,e:'Serverless auto-scales and auto-pauses — ideal for intermittent workloads.'},
+  {cert:'dp900',topic:'Relational Data',q:'Exposing only 3 safe columns of a sensitive table to analysts is done with:',o:['A view','DROP TABLE','A CSV export','An index'],a:0,e:'Views present a controlled subset without granting table access.'},
+  {cert:'dp900',topic:'Non-relational Data',q:'Cosmos DB throughput is provisioned in:',o:['GBs','Request Units per second (RU/s)','vCPUs','Mailboxes'],a:1,e:'RU/s is Cosmos DB\'s currency of throughput.'},
+  {cert:'dp900',topic:'Non-relational Data',q:'Migrating an on-prem file server used over SMB fits:',o:['Azure Files','Queue storage','A graph DB','Synapse'],a:0,e:'Azure Files provides SMB shares — the lift-and-shift home for file servers.'},
+  {cert:'dp900',topic:'Non-relational Data',q:'Reacting to every new Cosmos DB document (e.g. send a welcome email) uses:',o:['The change feed','A pie chart','GRS','An index only'],a:0,e:'The change feed streams inserts/updates for downstream processing.'},
+  {cert:'dp900',topic:'Analytics',q:'Power BI Desktop costs:',o:['$99/month','Nothing — authoring is free','Per query','Per visual'],a:1,e:'Desktop is free; sharing via the service needs licensing.'},
+  {cert:'dp900',topic:'Analytics',q:'A Fabric lakehouse combines:',o:['Email and chat','Data-lake file storage with warehouse-style SQL tables','VMs and VNets','DNS and certificates'],a:1,e:'Lakehouse = files in OneLake + Delta tables queryable like a warehouse.'},
+  {cert:'dp900',topic:'Analytics',q:'Monthly billing statement generation is a classic example of:',o:['Stream processing','Batch processing','Graph traversal','OLTP'],a:1,e:'Periodic processing of accumulated data = batch.'},
+  {cert:'dp900',topic:'Analytics',q:'Running a Data Factory pipeline every night at 2am uses:',o:['A schedule trigger','Manual clicks','A SAS token','RLS'],a:0,e:'Schedule triggers automate pipeline runs.'},
+  {cert:'dp900',topic:'Analytics',q:'Querying Parquet files in the lake with T-SQL WITHOUT loading them first uses:',o:['Synapse serverless SQL pool','A VM','Intune','Entra ID'],a:0,e:'Serverless SQL queries files in place — pay per TB scanned.'},
+  {cert:'pl300',topic:'Prepare Data',q:'Column distribution in Power Query shows:',o:['Colors','Distinct and unique value counts per column','Report pages','Refresh times'],a:1,e:'Profiling reveals cardinality and value spread — key for modeling decisions.'},
+  {cert:'pl300',topic:'Prepare Data',q:'Typing a small lookup table by hand directly in Power BI uses:',o:['Enter data','DirectQuery','A gateway','R scripts'],a:0,e:'Enter data creates a manual table — handy for mappings and parameters.'},
+  {cert:'pl300',topic:'Prepare Data',q:'Working with a huge source, you develop against a subset using:',o:['Keep top rows (then remove the step before refresh)','Deleting the source','Screenshots','RLS'],a:0,e:'Keep Rows filters during development; remove or parameterize it for full loads.'},
+  {cert:'pl300',topic:'Prepare Data',q:'Values like "N/A" should become proper nulls via:',o:['Replace Values','Rename column','A bookmark','A slicer'],a:0,e:'Replace Values ("N/A" → null) fixes pseudo-nulls before typing the column.'},
+  {cert:'pl300',topic:'Model Data (DAX)',q:'An INACTIVE relationship appears in model view as:',o:['A solid line','A dashed line','Red arrows','Invisible'],a:1,e:'Dashed = inactive; activate per-measure with USERELATIONSHIP.'},
+  {cert:'pl300',topic:'Model Data (DAX)',q:'Pulling the product Category into each Sales row (calculated column) uses:',o:['RELATED()','ALL()','TRIM()','UNION()'],a:0,e:'RELATED walks the many-to-one relationship to fetch the dimension value.'},
+  {cert:'pl300',topic:'Model Data (DAX)',q:'Safe division that returns blank instead of an error on zero:',o:['DIVIDE(a,b)','a/b always','MOD','ROUND'],a:0,e:'DIVIDE handles divide-by-zero gracefully with an optional alternate result.'},
+  {cert:'pl300',topic:'Model Data (DAX)',q:'Year → Quarter → Month drill-down in one visual needs:',o:['A hierarchy','Three reports','A gateway','RLS'],a:0,e:'Hierarchies enable drill-down through levels in a single visual.'},
+  {cert:'pl300',topic:'Visualize & Analyze',q:'Show only the 10 best-selling products in a bar chart using:',o:['A Top N visual-level filter','Deleting products','A new model','Excel'],a:0,e:'Top N filters rank by a measure and keep the top items.'},
+  {cert:'pl300',topic:'Visualize & Analyze',q:'Clicking a bar highlights related visuals. To make it FILTER them instead:',o:['Edit interactions','RLS','A gateway','Refresh'],a:0,e:'Edit interactions sets per-visual behavior: filter, highlight, or none.'},
+  {cert:'pl300',topic:'Visualize & Analyze',q:'Users exporting data from a visual get:',o:['The whole database','The data behind that visual, respecting filters/RLS','Nothing','Source credentials'],a:1,e:'Exports honor the visual\'s filters and the user\'s RLS.'},
+  {cert:'pl300',topic:'Manage & Secure',q:'Letting analysts build THEIR OWN reports on your published semantic model requires:',o:['Build permission on the model','Admin role','Nothing','The .pbix file emailed'],a:0,e:'Build permission allows creating new content from a shared semantic model.'},
+  {cert:'pl300',topic:'Manage & Secure',q:'Promoting content Dev → Test → Prod with compare and rules uses:',o:['Deployment pipelines','Email attachments','USB sticks','Print'],a:0,e:'Deployment pipelines (Premium/Fabric) manage staged releases.'},
+  {cert:'pl300',topic:'Manage & Secure',q:'A refresh suddenly fails with "credentials expired". Fix it in:',o:['Semantic model settings → Data source credentials','The Format pane','A bookmark','Page size'],a:0,e:'Re-authenticate the data source in the model\'s settings (or the gateway).'},
+  {cert:'ai900',topic:'AI Workloads',q:'Flagging unusual credit-card transactions in real time is:',o:['Anomaly detection','Translation','OCR','A dashboard'],a:0,e:'Detecting deviations from normal patterns = anomaly detection.'},
+  {cert:'ai900',topic:'AI Workloads',q:'Which is NOT an AI workload?',o:['Generating alt-text for images','A static monthly PDF report','Chatbot conversations','Sales forecasting'],a:1,e:'A static report involves no learning or inference.'},
+  {cert:'ai900',topic:'AI Workloads',q:'Automatically screening user uploads for harmful content uses:',o:['Content moderation / Azure AI Content Safety','A VPN','Blob tiers','KQL'],a:0,e:'Content Safety classifies and filters harmful text/images.'},
+  {cert:'ai900',topic:'AI Workloads',q:'Publishing documentation about a model\'s limits and intended use supports:',o:['Transparency','Elasticity','Caching','Scaling'],a:0,e:'Transparency = communicating capabilities, limits, and behavior.'},
+  {cert:'ai900',topic:'AI Workloads',q:'An AI system should degrade safely when inputs are unusual. Principle:',o:['Reliability & safety','Inclusiveness','Agility','Consumption'],a:0,e:'Reliability & safety covers robust, safe behavior under stress.'},
+  {cert:'ai900',topic:'AI Workloads',q:'Restricting who can access training data supports:',o:['Privacy & security','Transparency','Scalability','Batch processing'],a:0,e:'Protecting data and access = privacy & security.'},
+  {cert:'ai900',topic:'Machine Learning',q:'In ML, the LABEL is:',o:['The inputs','The value you\'re trying to predict','The chart title','The GPU'],a:1,e:'Features in, label out — the label is the target.'},
+  {cert:'ai900',topic:'Machine Learning',q:'A model scores 99% on training data but fails on new data. This is:',o:['Underfitting','Overfitting','Grounding','Streaming'],a:1,e:'Overfitting = memorized the training set instead of generalizing.'},
+  {cert:'ai900',topic:'Machine Learning',q:'Evaluating a classification model\'s true/false positives uses a:',o:['Confusion matrix','Pie chart','Gantt chart','Heatmap only'],a:0,e:'The confusion matrix breaks predictions into TP/FP/TN/FN.'},
+  {cert:'ai900',topic:'Machine Learning',q:'K-means is an algorithm for:',o:['Clustering','Translation','OCR','Speech'],a:0,e:'K-means groups unlabeled data into k clusters.'},
+  {cert:'ai900',topic:'Machine Learning',q:'After training, apps get predictions from the model via:',o:['A deployed endpoint (API)','A printed report','USB','DNS'],a:0,e:'Models are deployed to endpoints that applications call.'},
+  {cert:'ai900',topic:'Machine Learning',q:'Biased or dirty training data leads to:',o:['Better models','Biased or wrong predictions — garbage in, garbage out','Faster GPUs','Nothing'],a:1,e:'Model quality is bounded by data quality — and bias propagates.'},
+  {cert:'ai900',topic:'Vision & Language',q:'Confirming WHICH person a face belongs to (vs just finding faces) is:',o:['Facial recognition/identification','Face detection','OCR','Sentiment'],a:0,e:'Detection finds faces; recognition identifies whose they are (higher responsibility bar).'},
+  {cert:'ai900',topic:'Vision & Language',q:'Auto-generating a caption like "a dog on a beach" is:',o:['Image analysis / captioning','A slicer','Clustering','DLP'],a:0,e:'Azure AI Vision image analysis produces captions and tags.'},
+  {cert:'ai900',topic:'Vision & Language',q:'Training a classifier on YOUR OWN product photos uses:',o:['Custom Vision / custom models','Prebuilt OCR only','A gateway','KQL'],a:0,e:'Custom vision models learn your specific categories from your images.'},
+  {cert:'ai900',topic:'Vision & Language',q:'Live captions in another language combine:',o:['Speech-to-text + translation','OCR + DNS','Clustering + tiers','RBAC + tags'],a:0,e:'Speech translation pipelines transcribe then translate in near-real-time.'},
+  {cert:'ai900',topic:'Vision & Language',q:'"Detect the language of this text" returns:',o:['A language code with confidence','A VM','An image','A refresh schedule'],a:0,e:'Language detection returns the identified language and confidence score.'},
+  {cert:'ai900',topic:'Vision & Language',q:'Pulling "delivery delayed" as the main point of a complaint is:',o:['Key phrase extraction','Face detection','Regression','Batch'],a:0,e:'Key phrases surface the main talking points of text.'},
+  {cert:'ai900',topic:'Vision & Language',q:'Digitizing paper invoices end-to-end (find fields, extract values) uses:',o:['Document Intelligence','A line chart','Peering','Spot VMs'],a:0,e:'Document Intelligence combines OCR with field extraction models.'},
+  {cert:'ai900',topic:'Generative AI',q:'The "temperature" setting on an LLM controls:',o:['GPU heat','Randomness/creativity of output','Token price','Login security'],a:1,e:'Higher temperature = more varied output; lower = more deterministic.'},
+  {cert:'ai900',topic:'Generative AI',q:'Instructions that set an assistant\'s persona and rules live in the:',o:['System message/prompt','DNS zone','Confusion matrix','Gateway'],a:0,e:'The system message steers behavior for the whole conversation.'},
+  {cert:'ai900',topic:'Generative AI',q:'Including 2–3 worked examples in your prompt is called:',o:['Few-shot prompting','Overfitting','Failover','Tiering'],a:0,e:'Few-shot examples show the model the pattern you want.'},
+  {cert:'ai900',topic:'Generative AI',q:'Finding documents with similar MEANING (not keywords) uses:',o:['Embeddings / vector similarity','CSV sorting','A pie chart','NSGs'],a:0,e:'Embeddings map text to vectors; nearby vectors = similar meaning — the engine of semantic search and RAG.'},
+  {cert:'ai900',topic:'Generative AI',q:'Creating an image from the text "a cat astronaut, watercolor" is:',o:['Text-to-image generation','OCR','Object detection','Clustering'],a:0,e:'Image-generation models (DALL·E family) synthesize images from prompts.'},
+  {cert:'ai900',topic:'Generative AI',q:'Azure OpenAI content filters exist to:',o:['Speed up tokens','Block harmful prompts and completions','Compress images','Bill less'],a:1,e:'Built-in filters screen inputs/outputs for harm categories.'},
+  {cert:'ai900',topic:'Generative AI',q:'Prompt + completion together are limited by:',o:['The model\'s token/context limit','Your monitor size','DNS','RBAC'],a:0,e:'Context windows cap total tokens — long prompts leave less room for answers.'},
+  {cert:'sc900',topic:'Security Concepts',q:'An NSG protects which defense-in-depth layer?',o:['Network','Physical','Data','Application'],a:0,e:'NSGs filter traffic — the network layer of the stack.'},
+  {cert:'sc900',topic:'Security Concepts',q:'Even in SaaS, the CUSTOMER always remains responsible for:',o:['Datacenter power','Their data, identities, and devices','The hypervisor','Cabling'],a:1,e:'Shared responsibility: information, accounts, and endpoints stay yours.'},
+  {cert:'sc900',topic:'Security Concepts',q:'Azure Storage encrypting your blobs automatically is an example of:',o:['Encryption at rest','Encryption in transit','Hashing','Federation'],a:0,e:'Service-side encryption protects stored data by default.'},
+  {cert:'sc900',topic:'Security Concepts',q:'GDPR is best described as:',o:['A data-protection regulation organizations must comply with','A Microsoft product','A VM series','A DNS record'],a:0,e:'GDPR is EU privacy law — compliance tooling helps you meet it.'},
+  {cert:'sc900',topic:'Security Concepts',q:'"Security posture" means:',o:['Your chair position','The overall strength of your defenses and ability to respond','One password\'s length','Storage size'],a:1,e:'Posture = collective readiness: configurations, controls, response capability.'},
+  {cert:'sc900',topic:'Entra ID',q:'Risk-based policies from Entra ID Protection require which license?',o:['Entra ID P2','Free tier','Basic support','M365 Basic'],a:0,e:'ID Protection\'s risk detections and policies are P2 features (as is PIM).'},
+  {cert:'sc900',topic:'Entra ID',q:'Which sign-in method is phishing-RESISTANT?',o:['FIDO2 security keys','SMS codes','Passwords alone','Security questions'],a:0,e:'FIDO2/passkeys bind to the site cryptographically — nothing to phish.'},
+  {cert:'sc900',topic:'Entra ID',q:'Best practice for the Global Administrator role:',o:['Give it to everyone','Limit to a few accounts, protect with MFA/PIM','Share one account','Disable MFA on it'],a:1,e:'Fewest possible global admins, strongly protected and just-in-time.'},
+  {cert:'sc900',topic:'Entra ID',q:'Entra roles vs Azure RBAC roles:',o:['Same thing','Entra roles govern the directory; Azure RBAC governs resources','Both are DNS','Neither exists'],a:1,e:'Two planes: directory administration vs resource management.'},
+  {cert:'sc900',topic:'Entra ID',q:'Conditional Access can require a device to be:',o:['Expensive','Compliant/managed (via Intune) before granting access','Red','Offline'],a:1,e:'Device compliance signals feed Conditional Access decisions.'},
+  {cert:'sc900',topic:'Entra ID',q:'Bundling all access a new sales hire needs into one requestable package uses:',o:['Entitlement management (access packages)','A shared password','A public IP','Blob tiers'],a:0,e:'Access packages automate role/group/app bundles with approval and expiry.'},
+  {cert:'sc900',topic:'Entra ID',q:'Microsoft Entra Verified ID deals with:',o:['Verifiable credentials (decentralized identity proofs)','VM sizing','DNS','Backups'],a:0,e:'Verified ID issues and verifies cryptographic identity claims.'},
+  {cert:'sc900',topic:'Security Solutions',q:'Sentinel playbooks are built on:',o:['Logic Apps','Excel macros','Paint','BGP'],a:0,e:'Playbooks = Logic Apps workflows for automated response (SOAR).'},
+  {cert:'sc900',topic:'Security Solutions',q:'Defender for Cloud can assess resources in:',o:['Azure only','Azure, AWS, and GCP','On-prem only','Nothing'],a:1,e:'CSPM extends across multicloud and on-prem (via Arc).'},
+  {cert:'sc900',topic:'Security Solutions',q:'Just-in-time VM access reduces risk by:',o:['Opening management ports only when requested, briefly','Removing all NSGs','Sharing RDP passwords','Disabling MFA'],a:0,e:'JIT keeps RDP/SSH closed by default and opens time-boxed on request.'},
+  {cert:'sc900',topic:'Security Solutions',q:'A WAF protects web apps against:',o:['OWASP attacks like SQL injection and XSS','Power cuts','Overdue invoices','Slow typing'],a:0,e:'Web Application Firewalls block common web exploit patterns.'},
+  {cert:'sc900',topic:'Security Solutions',q:'Detecting attacks against ON-PREMISES Active Directory is:',o:['Defender for Identity','Defender for Office 365','Cost Management','AzCopy'],a:0,e:'Defender for Identity watches domain controllers for identity attacks.'},
+  {cert:'sc900',topic:'Security Solutions',q:'Discovering unsanctioned SaaS apps employees use ("shadow IT") is:',o:['Defender for Cloud Apps (CASB)','A pie chart','Peering','Bicep'],a:0,e:'Cloud App Security discovers and governs SaaS usage.'},
+  {cert:'sc900',topic:'Security Solutions',q:'Which combination enforces "only healthy devices reach email"?',o:['Intune compliance policy + Conditional Access','Two passwords','A resource lock','GRS'],a:0,e:'Intune reports compliance; Conditional Access enforces it at sign-in.'},
+  {cert:'sc900',topic:'Security Solutions',q:'Microsoft\'s SIEM ingests data using:',o:['Data connectors (M365, Azure, AWS, syslog…)','USB drives','Printers','Slicers'],a:0,e:'Sentinel connectors stream logs from Microsoft and third-party sources.'},
+  {cert:'sc900',topic:'Compliance',q:'Scanning and classifying data across your whole estate uses:',o:['Microsoft Purview Data Map/catalog','Paint 3D','VM Insights','Spot pricing'],a:0,e:'Purview maps, catalogs, and classifies data wherever it lives.'},
+  {cert:'sc900',topic:'Compliance',q:'Declaring content a "record" means:',o:['It gets deleted','It becomes immutable per retention rules','It turns into a chart','Nothing'],a:1,e:'Records management locks content against edits/deletion for its retention period.'},
+  {cert:'sc900',topic:'Compliance',q:'Microsoft Priva focuses on:',o:['Privacy risk management and subject-rights requests','GPU rendering','DNS hosting','VM backups'],a:0,e:'Priva automates privacy posture and data-subject request handling.'},
+  {cert:'sc900',topic:'Compliance',q:'Audit (Premium) adds over standard auditing:',o:['Longer retention and smarter, high-value events','Nothing','Free VMs','More emojis'],a:0,e:'Premium audit retains logs longer and captures richer events for investigations.'},
+  {cert:'sc900',topic:'Compliance',q:'Preventing the M&A team from chatting with traders (conflict of interest) uses:',o:['Information barriers','A pie chart','JIT access','Elastic pools'],a:0,e:'Information barriers block communication between defined groups.'},
+  {cert:'sc900',topic:'Compliance',q:'"Export all data you hold about me" is a:',o:['Data subject request (DSR)','Phishing attempt always','Backup job','DNS query'],a:0,e:'Privacy regulations grant individuals data rights; DSR tooling fulfills them.'},
 ];
 
 /* ---------- GLOSSARY (flashcards) ---------- */
@@ -2250,6 +2372,7 @@ const BADGES=[
   {id:'complete',ico:'🏆',name:'Certified Journey',desc:'Complete AZ-900 + AZ-104',check:s=>certPct(s,'az900')>=100&&certPct(s,'az104')>=100},
   {id:'grandslam',ico:'💠',name:'Grand Slam',desc:'Complete every cert curriculum',check:s=>CERT_ORDER.every(c=>certPct(s,c)>=100)},
   {id:'boss',ico:'👑',name:'Boss Slayer',desc:'Pass the Grand Mock (all certs mixed)',check:s=>s.examPass&&s.examPass.boss},
+  {id:'chest7',ico:'🎁',name:'Chest Hunter',desc:'Win the daily chest 7 days in a row',check:s=>(s.chestStreak||0)>=7},
   {id:'decksession',ico:'🎴',name:'Card Shark',desc:'Finish a flashcard study session',check:s=>(s.decksDone||0)>=1},
 ];
 
@@ -2597,7 +2720,7 @@ function render(){
       <div class="bar"><i style="width:${certPctGlobal(c)}%"></i></div></div>`).join('')
       ||'<div class="sub">Pick at least one track below 👇</div>';
   }
-  renderTracks(); renderReadiness(); renderReviewCard();
+  renderTracks(); renderReadiness(); renderReviewCard(); renderChest(); renderBuddy();
   renderDaily(); renderBadgesMini(); renderCountdown(); renderContinue(); renderWeak();
 }
 
@@ -2622,6 +2745,56 @@ function renderTrackChipsInto(boxId){
     };
     box.appendChild(el);
   });
+}
+
+/* ----- Home: daily challenge chest ----- */
+function chestQ(){
+  const pool=QUESTIONS.filter(q=>S.tracks[q.cert]);
+  return pool[dayNum()%pool.length];
+}
+function renderChest(){
+  const body=document.getElementById('chest-body');if(!body)return;
+  const t=todayStr();
+  document.getElementById('chest-streak').textContent='🔥 '+(S.chestStreak||0);
+  S.chest=S.chest||{};
+  const q=chestQ();
+  if(S.chest.day===t && S.chest.done){
+    body.innerHTML=`<div style="text-align:center;padding:8px 0">
+      <div style="font-size:46px">${S.chest.won?'💰':'💥'}</div>
+      <b style="color:${S.chest.won?'var(--green)':'var(--gold)'}">${S.chest.won?'Cracked it! +25 XP':'The chest zapped you (+5 XP for courage)'}</b>
+      <div class="q-explain" style="text-align:left;margin-top:12px"><b>${q.o[q.a]}</b> — ${q.e}</div>
+      <div class="cd-label" style="margin-top:10px">A new chest arrives tomorrow 🌅</div></div>`;
+    return;
+  }
+  if(!(S.chest.day===t && S.chest.open)){
+    body.innerHTML=`<div style="text-align:center;padding:10px 0">
+      <div style="font-size:56px" class="flame">🎁</div>
+      <button class="btn" onclick="openChest()" style="margin-top:8px">Open today's chest</button></div>`;
+    return;
+  }
+  const keys=['A','B','C','D'];
+  body.innerHTML=`<div style="font-weight:700;font-size:15px;margin:6px 0 12px">${pillOf(q.cert)} ${q.q}</div><div id="chest-opts"></div>`;
+  const box=document.getElementById('chest-opts');
+  q.o.forEach((opt,idx)=>{
+    const el=document.createElement('div');el.className='opt';
+    el.innerHTML=`<div class="key">${keys[idx]}</div><div>${opt}</div>`;
+    el.onclick=()=>answerChest(idx);
+    box.appendChild(el);
+  });
+}
+function openChest(){ S.chest={day:todayStr(),open:true,done:false}; save(); sfx('good'); renderChest(); }
+function answerChest(idx){
+  const q=chestQ(), ok=idx===q.a;
+  S.chest.done=true; S.chest.won=ok;
+  if(ok){
+    const y=new Date(Date.now()-86400000).toISOString().slice(0,10);
+    S.chestStreak=(S.chestLastWin===y)?(S.chestStreak||0)+1:1;
+    S.chestLastWin=todayStr();
+    markActive(); confettiBurst(); sfx('win'); toast('💰 Chest cracked! +25 XP'); addXP(25);
+  } else {
+    S.chestStreak=0; sfx('bad'); addXP(5);
+  }
+  recordAnswer(q.topic,ok,q); checkBadges(); save(); renderChest();
 }
 
 /* ----- Home: study activity heatmap (last 16 weeks) ----- */
@@ -2845,6 +3018,16 @@ function stripHTML(html){
 }
 function speak(text){
   if(!VOICE_OK) return;
+  // strip emojis/symbols so the voice doesn't read "fire emoji rocket emoji" aloud
+  text=text.replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{2190}-\u{21FF}\u{FE0F}\u{200D}\u{2020}-\u{2027}\u{2B50}\u{2764}]/gu,' ')
+           .replace(/[·•▸✓✔✕✗⚑👑]/g,' ')
+  // pronounce tech acronyms like a human, not letter soup
+           .replace(/\bIaaS\b/g,'eye-as').replace(/\bPaaS\b/g,'pass').replace(/\bSaaS\b/g,'sass').replace(/\bFaaS\b/g,'fass')
+           .replace(/\bvs\.?\b/gi,'versus').replace(/\bRBAC\b/g,'are-back').replace(/\bSQL\b/g,'sequel')
+           .replace(/\bGRS\b/g,'G R S').replace(/\bLRS\b/g,'L R S').replace(/\bZRS\b/g,'Z R S').replace(/\bGZRS\b/g,'G Z R S')
+           .replace(/\bSSPR\b/g,'S S P R').replace(/\bRLS\b/g,'R L S').replace(/\bDAX\b/g,'dax').replace(/\bOCR\b/g,'O C R')
+           .replace(/\s+/g,' ').trim();
+  if(!text) return;
   window.speechSynthesis.cancel();
   const u=new SpeechSynthesisUtterance(text);
   u.rate=(S.vrate||0.98); u.pitch=1; u.lang='en-US';
@@ -3187,7 +3370,7 @@ function backToQuizMenu(){
 }
 
 /* ---------- MOCK EXAM ENGINE ---------- */
-const EXAM_CFG={ az900:{n:30,min:40,name:'AZ-900'}, az104:{n:35,min:60,name:'AZ-104'}, dp900:{n:30,min:42,name:'DP-900'}, pl300:{n:32,min:58,name:'PL-300'}, ai900:{n:24,min:35,name:'AI-900'}, sc900:{n:24,min:35,name:'SC-900'}, boss:{n:40,min:50,name:'👑 Grand Mock'} };
+const EXAM_CFG={ az900:{n:30,min:40,name:'AZ-900'}, az104:{n:35,min:60,name:'AZ-104'}, dp900:{n:30,min:42,name:'DP-900'}, pl300:{n:32,min:58,name:'PL-300'}, ai900:{n:30,min:42,name:'AI-900'}, sc900:{n:30,min:42,name:'SC-900'}, boss:{n:40,min:50,name:'👑 Grand Mock'} };
 let EX=null; // {cert,pool,answers,i,endTime,timer}
 function startExam(cert){
   const cfg=EXAM_CFG[cert];
@@ -3813,15 +3996,32 @@ function buddyName(){return (S.buddy&&S.buddy.name)||'Nimbus';}
 function renderBuddy(){
   const m=document.getElementById('mascot');if(!m)return;
   const t=BUDDY_TYPES[S.buddy.type]?S.buddy.type:'cloud';
-  m.innerHTML=`<svg viewBox="0 0 128 112" width="76" height="76" style="filter:hue-rotate(${S.buddy.hue||0}deg)">${BUDDY_TYPES[t].svg}</svg>`;
+  // evolution: accessories unlock as you level up
+  const L=lvl(S.xp); let extra='';
+  if(L>=5) extra+=`<g><polygon points="52,88 64,93 52,98" fill="#ff4b6e"/><polygon points="76,88 64,93 76,98" fill="#ff4b6e"/><circle cx="64" cy="93" r="3.5" fill="#c92a4e"/></g>`;
+  if(L>=10) extra+=`<g><rect x="43" y="51" width="21" height="13" rx="6" fill="#10142c"/><rect x="66" y="51" width="21" height="13" rx="6" fill="#10142c"/><line x1="64" y1="56" x2="66" y2="56" stroke="#10142c" stroke-width="3"/><rect x="46" y="53" width="7" height="3" rx="1.5" fill="#3a4a80"/></g>`;
+  if(L>=20) extra+=`<polygon points="42,24 50,6 60,20 68,4 76,20 86,6 92,24" fill="#ffc800" stroke="#9c7a1c" stroke-width="2.5" stroke-linejoin="round"/>`;
+  else if(L>=15) extra+=`<g><polygon points="64,4 100,18 64,32 28,18" fill="#1b2244" stroke="#3a4a80" stroke-width="1.5"/><rect x="52" y="24" width="24" height="9" rx="3" fill="#1b2244"/><line x1="100" y1="18" x2="103" y2="36" stroke="#ffc800" stroke-width="3"/><circle cx="103" cy="39" r="4" fill="#ffc800"/></g>`;
+  m.innerHTML=`<svg viewBox="0 0 128 112" width="76" height="76" style="filter:hue-rotate(${S.buddy.hue||0}deg)">${BUDDY_TYPES[t].svg}${extra}</svg>`;
   m.title=buddyName()+' — your guide (tap me!)';
   m.dataset.type=t;
+}
+function toggleBuddyVoice(){
+  S.buddy.voice=!S.buddy.voice; save();
+  updateBuddyVoiceBtn();
+  if(S.buddy.voice){ if(VOICE_OK) speak('Hi! I am '+buddyName()+'. Let\'s study!'); else toast('This browser has no speech voices 😢'); }
+  else stopSpeak();
+}
+function updateBuddyVoiceBtn(){
+  const b=document.getElementById('buddy-voice-btn');if(!b)return;
+  b.classList.toggle('off',!S.buddy.voice);
+  b.textContent=S.buddy.voice?'🔊 Buddy speaks: On':'🔇 Buddy speaks: Off';
 }
 let buddyPick={type:null,hue:null};
 function openBuddy(){
   buddyPick={type:S.buddy.type,hue:S.buddy.hue};
   document.getElementById('buddy-name').value=S.buddy.name;
-  renderBuddyPickers();
+  renderBuddyPickers(); updateBuddyVoiceBtn();
   document.getElementById('buddy-modal').classList.add('show');
 }
 function closeBuddy(){document.getElementById('buddy-modal').classList.remove('show');}
@@ -3881,7 +4081,9 @@ const TOUR=[
 ];
 let tourI=-1;
 function mascotSay(html,btns){
-  document.getElementById('bubble-text').innerHTML=html.replaceAll('{B}',buddyName());
+  const text=html.replaceAll('{B}',buddyName());
+  document.getElementById('bubble-text').innerHTML=text;
+  if(S.buddy&&S.buddy.voice&&VOICE_OK) speak(stripHTML(text));
   const bb=document.getElementById('bubble-btns');bb.innerHTML='';
   (btns||[['Got it ✓',hideBubble]]).forEach(([label,fn,ghost])=>{
     const btn=document.createElement('button');
@@ -3890,7 +4092,7 @@ function mascotSay(html,btns){
   });
   document.getElementById('bubble').classList.remove('hidden');
 }
-function hideBubble(){document.getElementById('bubble').classList.add('hidden');}
+function hideBubble(){document.getElementById('bubble').classList.add('hidden');if(S.buddy&&S.buddy.voice)stopSpeak();}
 function startTour(){tourI=0;hideBubble();document.getElementById('tour-overlay').classList.remove('hidden');tourStep();}
 function tourStep(){
   const st=TOUR[tourI];
