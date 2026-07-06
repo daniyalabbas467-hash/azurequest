@@ -3167,7 +3167,7 @@ function shareScore(){
   cx.font='600 26px "Nunito","Segoe UI",sans-serif'; cx.fillStyle='#93a0c4';
   cx.fillText(r.correct+'/'+r.total+' correct · pass mark 700 · '+r.when,500,424);
   cx.fillStyle='#1cb0f6';
-  cx.fillText('Try it: daniyalabbas467-hash.github.io/azurequest',500,492);
+  cx.fillText('Try it: tinyurl.com/azurequestapp',500,492);
   cv.toBlob(blob=>{
     if(!blob){ toast('Could not create image'); return; }
     const file=new File([blob],'azurequest-score.png',{type:'image/png'});
@@ -3301,7 +3301,7 @@ function exportProgress(){
   toast('⬇ Progress exported — keep the .json safe or move it to another device');
 }
 function shareApp(){
-  const msg='AzureQuest — free study app for AZ-900, AZ-104, DP-900 & PL-300. Guided lessons, quizzes, mock exams, flashcards & hands-on labs, all in ONE index.html file. Send someone the file and they have everything.';
+  const msg='AzureQuest — free study app for 6 Microsoft certs (AZ-900, AZ-104, DP-900, PL-300, AI-900, SC-900). Lessons, quizzes, mock exams, flashcards, labs & cheat sheets: https://tinyurl.com/azurequestapp';
   if(navigator.share){ navigator.share({title:'AzureQuest',text:msg}).catch(()=>{}); }
   else if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(msg); toast('📋 Pitch copied — attach index.html and send it!'); }
   else toast('Send the index.html file — it IS the whole app.');

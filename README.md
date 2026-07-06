@@ -2,7 +2,7 @@
 
 **A free, gamified study app for Microsoft certification exams — all in a single HTML file.**
 
-### 👉 Use it now: **[daniyalabbas467-hash.github.io/azurequest](https://daniyalabbas467-hash.github.io/azurequest/)**
+### 👉 Use it now: **[tinyurl.com/azurequestapp](https://tinyurl.com/azurequestapp)**
 
 No install, no sign-up, no server. Open the link (or download `index.html` and double-click it) and everything runs in your browser.
 
