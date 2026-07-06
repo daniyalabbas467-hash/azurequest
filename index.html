@@ -259,6 +259,22 @@
   .tchip{border:1px solid var(--line);background:var(--bg2);color:var(--muted);border-radius:20px;padding:6px 13px;font-weight:700;font-size:12px;cursor:pointer;transition:.15s}
   .tchip.on{color:var(--text);border-color:var(--accent);background:linear-gradient(135deg,#1a2450,#2a1a50)}
   .tchip:hover{transform:translateY(-1px)}
+  /* Learn tab: per-course sections */
+  .cert-sec{margin-bottom:14px;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--bg2)}
+  .cert-sec .cs-head{display:flex;align-items:center;gap:14px;padding:15px 18px;cursor:pointer;transition:background .15s}
+  .cert-sec .cs-head:hover{background:var(--card2)}
+  .cs-ico{font-size:26px;flex:none}
+  .cs-title{flex:1;min-width:0}
+  .cs-title b{font-size:16px}
+  .cs-title small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+  .cs-meta{display:flex;align-items:center;gap:12px;flex:none}
+  .cs-meta .bar{width:110px;height:10px}
+  .cs-pct{font-weight:800;min-width:38px;text-align:right;font-size:14px}
+  .cs-chev{color:var(--muted);transition:transform .2s}
+  .cert-sec.open .cs-chev{transform:rotate(180deg)}
+  .cert-sec .cs-body{display:none;padding:12px 14px;border-top:1px solid var(--line)}
+  .cert-sec.open .cs-body{display:block}
+  @media(max-width:560px){.cs-meta .bar{width:60px}}
   /* curriculum / flashcard filter chips */
   .filter-chips{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
   .fchip{border:1px solid var(--line);background:var(--bg2);color:var(--muted);border-radius:12px;padding:7px 14px;font-weight:700;font-size:13px;cursor:pointer;transition:.15s}
@@ -750,7 +766,7 @@
       <button class="tool-btn" onclick="shareApp()">📤 Share this app</button>
     </div>
     <input type="file" id="imp-file" accept=".json,application/json" style="display:none">
-    AzureQuest · AZ-900 · AZ-104 · DP-900 · PL-300 · the whole app is ONE file — send <b>index.html</b> to anyone and they get everything<br>
+    AzureQuest · 6 Microsoft certs · the whole app is ONE file — send <b>AzureQuest.html</b> to anyone (or share the link) and they get everything<br>
     progress saves automatically in this browser · <span class="reset-link" onclick="appConfirm('Reset ALL progress? This cannot be undone.',()=>{try{localStorage.removeItem(SKEY);}catch(e){}location.reload();})">reset all progress</span>
   </footer>
 </div>
@@ -2485,11 +2501,37 @@ function renderCurriculum(){
     .concat(CERT_ORDER.map(c=>`<button class="fchip${S.curFilter===c?' active':''}" data-f="${c}">${icoOf(c)} ${CERTS[c].name}</button>`));
   ctrl.innerHTML=`<div class="filter-chips" style="margin:0">${chips.join('')}</div>
     <button class="weak-drill" id="lockmode">${S.unlockAll?'🔓 All unlocked (click to lock path)':'🔒 Path locked (click to unlock all)'}</button>`;
-  ctrl.querySelectorAll('.fchip').forEach(b=>b.onclick=()=>{S.curFilter=b.dataset.f;save();renderCurriculum();});
+  ctrl.querySelectorAll('.fchip').forEach(b=>b.onclick=()=>{S.curFilter=b.dataset.f;if(b.dataset.f){S.secOpen=S.secOpen||{};S.secOpen[b.dataset.f]=true;}save();renderCurriculum();});
   ctrl.querySelector('#lockmode').onclick=()=>{S.unlockAll=!S.unlockAll;save();renderCurriculum();};
   box.appendChild(ctrl);
-  CURRICULUM.forEach((m,mi)=>{
-    if(S.curFilter && m.cert!==S.curFilter) return;
+  // one collapsible section per course
+  S.secOpen=S.secOpen||{};
+  const contIdx=CURRICULUM.findIndex((m,mi)=>S.tracks[m.cert]&&!(S.lessons&&S.lessons[mi]));
+  const contCert=contIdx>=0?CURRICULUM[contIdx].cert:CERT_ORDER[0];
+  CERT_ORDER.forEach(c=>{
+    if(S.curFilter && c!==S.curFilter) return;
+    const mods=CURRICULUM.map((m,mi)=>[m,mi]).filter(([m])=>m.cert===c);
+    const mTotal=mods.length;
+    const mDone=mods.filter(([m,mi])=>m.items.every((_,i)=>S.done[mi+'-'+i])).length;
+    const lRead=mods.filter(([m,mi])=>S.lessons&&S.lessons[mi]).length;
+    const pct=certPctGlobal(c);
+    const isOpen=S.secOpen[c]!==undefined ? S.secOpen[c] : (c===contCert);
+    const sec=document.createElement('div');
+    sec.className='cert-sec'+(isOpen?' open':'');
+    sec.innerHTML=`<div class="cs-head">
+        <div class="cs-ico">${icoOf(c)}</div>
+        <div class="cs-title"><b>${CERTS[c].name} — ${CERTS[c].full}</b>
+          <small>${mTotal} modules · ${mDone} complete · ${lRead}/${mTotal} lessons read</small></div>
+        <div class="cs-meta"><div class="bar"><i style="width:${pct}%"></i></div><span class="cs-pct">${pct}%</span><span class="cs-chev">▾</span></div>
+      </div>
+      <div class="cs-body"></div>`;
+    sec.querySelector('.cs-head').onclick=()=>{S.secOpen[c]=!isOpen;save();renderCurriculum();};
+    const secBody=sec.querySelector('.cs-body');
+    mods.forEach(([m,mi])=>secBody.appendChild(buildModule(m,mi)));
+    box.appendChild(sec);
+  });
+
+  function buildModule(m,mi){
     const total=m.items.length;
     const done=m.items.filter((_,i)=>S.done[mi+'-'+i]).length;
     const complete=done===total;
@@ -2505,7 +2547,7 @@ function renderCurriculum(){
       : `<span class="lock-note">🔒 Locked</span>`;
     mod.innerHTML=`
       <div class="m-head${complete?' done':''}">
-        <div class="m-num">${complete?'✓':(unlocked?mi+1:'🔒')}</div>
+        <div class="m-num">${complete?'✓':(unlocked?(mi-CURRICULUM.findIndex(x=>x.cert===m.cert)+1):'🔒')}</div>
         <div class="m-title">${m.week} — ${m.title} ${pill}<small>${m.sub} · ${done}/${total} done ${lessonRead?'· 📖 read':''}</small></div>
         <div class="m-actions">${action}<div>▾</div></div>
       </div>
@@ -2526,8 +2568,8 @@ function renderCurriculum(){
       body.appendChild(row);
     });
     mod.querySelector('.m-head').onclick=()=>{S.open=S.open||{};S.open[mi]=!S.open[mi];save();renderCurriculum();};
-    box.appendChild(mod);
-  });
+    return mod;
+  }
 }
 
 /* map each curriculum module → its quiz topic (for "take the quiz on this") */
