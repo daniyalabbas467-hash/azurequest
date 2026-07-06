@@ -495,6 +495,7 @@
       <div class="tag">💡 FACT OF THE DAY</div>
       <h3 id="tip-title">Loading...</h3>
       <p id="tip-body"></p>
+      <p id="tip-mot" style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(147,160,196,.25);color:var(--gold);font-weight:700;font-size:14px"></p>
     </div>
 
     <div class="card" id="review-card" style="margin-top:18px;display:none">
@@ -565,6 +566,12 @@
 
   <!-- ROADMAP -->
   <section id="tab-roadmap" class="hidden">
+    <div class="card">
+      <h2>💼 Why this grind pays — the job market</h2>
+      <div class="sub">Certs alone don't get jobs — certs + labs + a portfolio get <b>interviews</b>. But the demand behind these six is very real:</div>
+      <div id="careers"></div>
+      <div class="cd-label" style="margin-top:10px">💡 Indicative US-market ranges (Glassdoor/Payscale ballparks, 2025-26). Pay varies a lot by country and experience — Gulf and remote-first roles often benchmark near these; local markets differ. Treat them as direction, not promises.</div>
+    </div>
     <div class="card">
       <h2>🗺️ Your 3-Month Roadmap</h2>
       <div class="sub">Aggressive pace · 2 hrs/day · Target: both certs by early October 2026</div>
@@ -2165,6 +2172,32 @@ const BADGES=[
   {id:'decksession',ico:'🎴',name:'Card Shark',desc:'Finish a flashcard study session',check:s=>(s.decksDone||0)>=1},
 ];
 
+/* ---------- CAREER PAYOFF (motivation with numbers) ---------- */
+const CAREERS=[
+  {cert:'az900',roles:'Cloud Support · Service Desk → Cloud · Junior Ops',pay:'$45–70k entry',note:'The door-opener. Recruiters filter CVs by it — it proves you speak cloud before anyone interviews you.'},
+  {cert:'az104',roles:'Azure Administrator · Cloud Engineer · SysAdmin → Cloud',pay:'$80–120k (≈$100k typical)',note:'One of the most-listed Azure certs in job posts. Every company running Azure needs someone to run Azure — that\'s this cert.'},
+  {cert:'dp900',roles:'Junior Data Engineer · Data Ops · Analyst pathways',pay:'stepping stone',note:'Data roles are the fastest-growing job family this decade. DP-900 is the cheapest ticket into that conversation.'},
+  {cert:'pl300',roles:'Data Analyst · BI Developer · Reporting Analyst',pay:'$70–110k',note:'Power BI is the #1 BI tool by market share — every department in every company wants dashboards. Analysts who model properly are rare.'},
+  {cert:'ai900',roles:'AI-adjacent everything — support, sales, analyst, ops',pay:'premium on top of any role',note:'Every job posting now sprinkles "AI" in it. AI-900 lets you back it up in an interview instead of nodding along.'},
+  {cert:'sc900',roles:'Security Analyst pathway (→ SC-200) · GRC · IT Sec',pay:'$85–130k down the path',note:'Cybersecurity has ~4 MILLION unfilled jobs worldwide. Security fundamentals + any admin skills = extremely employable combo.'},
+];
+
+/* rotating daily motivation */
+const MOTIV=[
+  'The exam fee is ~$99–165. The salary jump it can unlock is measured in thousands — per year, every year.',
+  'A typical Azure Administrator (AZ-104) earns around $100k in the US market. Your 2 hours today are literally an investment.',
+  'Nobody feels ready. The people who pass are the ones who showed up on a random Tuesday like today.',
+  'Cloud runs on people who once knew nothing about it. Every expert you\'ll interview with started at module 1.',
+  'Your streak isn\'t about the app — it\'s proof to yourself that you keep promises you make to you.',
+  'Companies aren\'t short on cloud budgets. They\'re short on people who can run them. Be the shortage.',
+  '15 quiz questions today = 15 questions that can\'t surprise you on exam day.',
+  'The difference between "interested in cloud" and "certified" is about 60 focused days. You\'re inside them right now.',
+  'AI won\'t take the job of the person who administers the AI\'s infrastructure. That\'s the seat you\'re studying for.',
+  'Done beats perfect: a passed AZ-900 this month outranks a "planned" AZ-104 forever.',
+  'Every lab you actually do is an interview story: "yes, I\'ve built that — want me to show you?"',
+  'You don\'t need to be smarter than anyone. You need 85%+ on a practice test and the nerve to click BOOK.',
+];
+
 const ROADMAP=[
   {m:'Month 1 · July',c:'az900',title:'AZ-900 + Fundamentals from scratch',pts:['W1 Cloud concepts','W2 Architecture & services (+first VM lab)','W3 Management & governance (+RBAC lab)','W4 Practice exam → PASS AZ-900']},
   {m:'Month 2 · August',c:'az104',title:'AZ-104 Part 1 + start portfolio',pts:['W5–6 Identities & governance','W7 Storage','W8–9 Compute (VMs, containers, App Service)','Build portfolio projects 1–2']},
@@ -2872,7 +2905,19 @@ function closeLesson(){
   renderCurriculum();
 }
 
+function renderCareers(){
+  const box=document.getElementById('careers');if(!box)return;
+  box.innerHTML='';
+  CAREERS.forEach(c=>{
+    const el=document.createElement('div');el.className='res';
+    el.innerHTML=`<div class="ri">${icoOf(c.cert)}</div>
+      <div class="r-body"><b>${pillOf(c.cert)} ${c.roles}</b> <span style="color:var(--gold);font-weight:800">· ${c.pay}</span><small>${c.note}</small></div>`;
+    box.appendChild(el);
+  });
+}
+
 function renderRoadmap(){
+  renderCareers();
   const box=document.getElementById('roadmap');box.innerHTML='';
   ROADMAP.forEach(r=>{
     const pill=pillOf(r.c);
@@ -2915,6 +2960,8 @@ function renderTip(){
   const idx=dayNum()%TIPS.length;
   document.getElementById('tip-title').textContent=TIPS[idx].t;
   document.getElementById('tip-body').textContent=TIPS[idx].b;
+  const mot=document.getElementById('tip-mot');
+  if(mot) mot.textContent='💪 '+MOTIV[dayNum()%MOTIV.length];
 }
 
 /* ---------- QUIZ ENGINE ---------- */
