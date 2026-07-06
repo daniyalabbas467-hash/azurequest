@@ -345,6 +345,18 @@
   #mascot{position:fixed;right:16px;bottom:16px;width:76px;height:76px;z-index:96;cursor:pointer;
     filter:drop-shadow(0 12px 14px rgba(0,0,0,.5));animation:mbob 3.4s ease-in-out infinite;transition:transform .2s}
   #mascot:hover{transform:scale(1.1) rotate(-3deg)}
+  #mascot.boing{animation:mboing .5s cubic-bezier(.34,1.8,.64,1)}
+  @keyframes mboing{0%{transform:scale(1)}35%{transform:scale(1.25,.78)}65%{transform:scale(.86,1.16)}100%{transform:scale(1)}}
+  /* buddy studio */
+  .btype-grid{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+  .btype{width:72px;height:84px;border:2px solid var(--line);border-radius:14px;background:var(--bg2);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:.15s;font-size:11px;color:var(--muted);font-weight:700}
+  .btype:hover{transform:translateY(-3px)}
+  .btype.sel{border-color:var(--gold);background:#2a2410;color:var(--text)}
+  .btype svg{width:44px;height:40px}
+  .hue-row{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+  .hue-btn{width:34px;height:34px;border-radius:50%;border:2px solid var(--line);cursor:pointer;transition:.12s}
+  .hue-btn:hover{transform:scale(1.12)}
+  .hue-btn.sel{border-color:#fff;box-shadow:0 0 0 3px var(--gold)}
   @keyframes mbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
   #mascot .eyes{animation:mblink 5.2s infinite}
   @keyframes mblink{0%,91%,100%{transform:scaleY(1)}94%,97%{transform:scaleY(.08)}}
@@ -911,6 +923,20 @@
   </svg>
 </div>
 <div class="toast" id="toast"></div>
+<div class="modal-wrap" id="buddy-modal">
+  <div class="card">
+    <div class="q-top"><h2 style="margin:0">🎨 Buddy Studio</h2><button class="btn ghost" style="padding:7px 13px" onclick="closeBuddy()">✕ Close</button></div>
+    <div class="sub" style="margin-top:6px">Make your study buddy yours — name it, pick a species, paint it.</div>
+    <h3 style="font-size:14px;margin:12px 0 4px">Name</h3>
+    <input class="name-input" id="buddy-name" maxlength="16" placeholder="Buddy name" style="max-width:240px">
+    <h3 style="font-size:14px;margin:14px 0 0">Species</h3>
+    <div class="btype-grid" id="buddy-types"></div>
+    <h3 style="font-size:14px;margin:10px 0 0">Color</h3>
+    <div class="hue-row" id="buddy-hues"></div>
+    <button class="btn blue" onclick="saveBuddy()" style="margin-top:8px">Save buddy ✓</button>
+  </div>
+</div>
+
 <div class="modal-wrap" id="profile-modal">
   <div class="card">
     <div class="q-top"><h2 style="margin:0">👤 Profiles</h2><button class="btn ghost" style="padding:7px 13px" onclick="closeProfiles()">✕ Close</button></div>
@@ -3752,6 +3778,85 @@ function confettiBurst(){
   })();
 }
 
+/* ---------- BUDDY — customizable mascot (name, species, color) ---------- */
+S.buddy=Object.assign({name:'Nimbus',type:'cloud',hue:0},S.buddy||{});
+const BUDDY_FACE=`<g class="eyes"><circle cx="54" cy="58" r="7" fill="#1b2244"/><circle cx="56.7" cy="55.2" r="2.4" fill="#fff"/><circle cx="78" cy="58" r="7" fill="#1b2244"/><circle cx="80.7" cy="55.2" r="2.4" fill="#fff"/></g>
+<ellipse cx="45" cy="69" rx="5" ry="2.8" fill="#ffb0c8" opacity=".85"/><ellipse cx="87" cy="69" rx="5" ry="2.8" fill="#ffb0c8" opacity=".85"/>
+<path d="M59 71 Q66 78 73 71" stroke="#1b2244" stroke-width="3.2" fill="none" stroke-linecap="round"/>`;
+const BUDDY_DEFS=`<defs><radialGradient id="mgrad" cx="0.38" cy="0.28" r="1.05"><stop offset="0" stop-color="#ffffff"/><stop offset="0.72" stop-color="#e2eaff"/><stop offset="1" stop-color="#b7c6f4"/></radialGradient></defs>`;
+const BUDDY_SHADOW=`<ellipse cx="64" cy="106" rx="32" ry="5.5" fill="rgba(0,0,0,.35)"/>`;
+const BUDDY_TYPES={
+  cloud:{label:'Cloud',svg:`${BUDDY_DEFS}${BUDDY_SHADOW}
+    <circle cx="40" cy="64" r="25" fill="url(#mgrad)"/><circle cx="66" cy="48" r="31" fill="url(#mgrad)"/><circle cx="92" cy="66" r="23" fill="url(#mgrad)"/>
+    <rect x="32" y="64" width="66" height="27" rx="13.5" fill="url(#mgrad)"/>
+    <polygon points="102,70 92,88 100,88 94,104 110,84 101,84 108,70" fill="#ffc800" stroke="#1a1030" stroke-width="3.5" stroke-linejoin="round"/>${BUDDY_FACE}`},
+  cat:{label:'Cat',svg:`${BUDDY_DEFS}${BUDDY_SHADOW}
+    <polygon points="34,44 42,14 58,38" fill="url(#mgrad)" stroke="#b7c6f4" stroke-width="2"/>
+    <polygon points="94,44 86,14 70,38" fill="url(#mgrad)" stroke="#b7c6f4" stroke-width="2"/>
+    <polygon points="38,38 43,22 52,36" fill="#ffb0c8" opacity=".7"/><polygon points="90,38 85,22 76,36" fill="#ffb0c8" opacity=".7"/>
+    <ellipse cx="64" cy="66" rx="38" ry="34" fill="url(#mgrad)"/>
+    <path d="M20 60 L40 64 M20 72 L40 70" stroke="#8a97c4" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M108 60 L88 64 M108 72 L88 70" stroke="#8a97c4" stroke-width="2.4" stroke-linecap="round"/>
+    <polygon points="64,64 60,69 68,69" fill="#ffb0c8"/>${BUDDY_FACE}`},
+  robot:{label:'Robot',svg:`${BUDDY_DEFS}${BUDDY_SHADOW}
+    <line x1="64" y1="14" x2="64" y2="28" stroke="#8a97c4" stroke-width="4"/><circle cx="64" cy="12" r="6" fill="#ffc800" stroke="#1a1030" stroke-width="2.5"/>
+    <rect x="26" y="28" width="76" height="66" rx="16" fill="url(#mgrad)" stroke="#b7c6f4" stroke-width="2"/>
+    <rect x="14" y="50" width="12" height="24" rx="6" fill="url(#mgrad)"/><rect x="102" y="50" width="12" height="24" rx="6" fill="url(#mgrad)"/>
+    <rect x="46" y="82" width="36" height="7" rx="3.5" fill="#8a97c4" opacity=".55"/>${BUDDY_FACE}`},
+  ghost:{label:'Ghost',svg:`${BUDDY_DEFS}${BUDDY_SHADOW}
+    <path d="M26 96 V58 a38 34 0 0 1 76 0 V96 l-12.5-9 -12.5,9 -13-9 -13,9 -12.5-9 Z" fill="url(#mgrad)"/>${BUDDY_FACE}`},
+  star:{label:'Star',svg:`${BUDDY_DEFS}${BUDDY_SHADOW}
+    <polygon points="64,6 79,42 118,46 89,72 97,110 64,90 31,110 39,72 10,46 49,42" fill="url(#mgrad)" stroke="#b7c6f4" stroke-width="2" stroke-linejoin="round"/>${BUDDY_FACE}`},
+};
+const BUDDY_HUES=[0,40,140,180,250,300];
+function buddyName(){return (S.buddy&&S.buddy.name)||'Nimbus';}
+function renderBuddy(){
+  const m=document.getElementById('mascot');if(!m)return;
+  const t=BUDDY_TYPES[S.buddy.type]?S.buddy.type:'cloud';
+  m.innerHTML=`<svg viewBox="0 0 128 112" width="76" height="76" style="filter:hue-rotate(${S.buddy.hue||0}deg)">${BUDDY_TYPES[t].svg}</svg>`;
+  m.title=buddyName()+' — your guide (tap me!)';
+  m.dataset.type=t;
+}
+let buddyPick={type:null,hue:null};
+function openBuddy(){
+  buddyPick={type:S.buddy.type,hue:S.buddy.hue};
+  document.getElementById('buddy-name').value=S.buddy.name;
+  renderBuddyPickers();
+  document.getElementById('buddy-modal').classList.add('show');
+}
+function closeBuddy(){document.getElementById('buddy-modal').classList.remove('show');}
+function renderBuddyPickers(){
+  const tg=document.getElementById('buddy-types');tg.innerHTML='';
+  Object.keys(BUDDY_TYPES).forEach(k=>{
+    const b=document.createElement('button');
+    b.className='btype'+(buddyPick.type===k?' sel':'');
+    b.innerHTML=`<svg viewBox="0 0 128 112" style="filter:hue-rotate(${buddyPick.hue||0}deg)">${BUDDY_TYPES[k].svg}</svg>${BUDDY_TYPES[k].label}`;
+    b.onclick=()=>{buddyPick.type=k;renderBuddyPickers();};
+    tg.appendChild(b);
+  });
+  const hr=document.getElementById('buddy-hues');hr.innerHTML='';
+  BUDDY_HUES.forEach(h=>{
+    const b=document.createElement('button');
+    b.className='hue-btn'+(buddyPick.hue===h?' sel':'');
+    b.style.background=`linear-gradient(135deg, hsl(${(225+h)%360},85%,72%), hsl(${(262+h)%360},80%,62%))`;
+    b.title=h+'°';
+    b.onclick=()=>{buddyPick.hue=h;renderBuddyPickers();};
+    hr.appendChild(b);
+  });
+}
+function saveBuddy(){
+  const nm=(document.getElementById('buddy-name').value||'').trim();
+  S.buddy.name=nm||'Nimbus';
+  S.buddy.type=buddyPick.type||'cloud';
+  S.buddy.hue=buddyPick.hue||0;
+  save(); renderBuddy(); closeBuddy(); sfx('good');
+  mascotSay('Looking GOOD! 😎 <b>'+buddyName()+'</b> reporting for study duty!');
+}
+function buddyBoing(){
+  const m=document.getElementById('mascot');
+  m.classList.remove('boing'); void m.offsetWidth; m.classList.add('boing');
+}
+
 /* ---------- NIMBUS — mascot, guided tour & course intros ---------- */
 const CERT_INTROS={
   az900:"☁️ <b>AZ-900 — Azure Fundamentals.</b> The friendly one! Zero tech background needed. Three teaching modules plus exam prep — most people are ready in 3–4 weeks. This is the cert that gets your CV past the filters.",
@@ -3762,7 +3867,7 @@ const CERT_INTROS={
   sc900:"🛡️ <b>SC-900 — Security Fundamentals.</b> Zero Trust, the Defender family, Sentinel. Security has millions of unfilled jobs — and this exam is mostly 'which product does what'. 2–3 weeks.",
 };
 const TOUR=[
-  {tab:'home',sel:'.stats-bar',t:"Hi! I'm <b>Nimbus</b> ☁️ — your study buddy. Up here live your <b>streak</b>, <b>XP</b>, <b>level</b> and the <b>study timer</b> — 30 focused minutes completes a daily goal."},
+  {tab:'home',sel:'.stats-bar',t:"Hi! I'm <b>{B}</b> — your study buddy. Up here live your <b>streak</b>, <b>XP</b>, <b>level</b> and the <b>study timer</b> — 30 focused minutes completes a daily goal."},
   {tab:'home',sel:'#track-chips',t:"These chips choose <b>which certs you're chasing</b>. Everything adapts to them — your ring, daily quiz, countdowns and readiness."},
   {tab:'home',sel:'#ready-card',t:"Your <b>Exam Readiness</b> — curriculum + quiz accuracy + mock scores. When a bar hits <b>85%</b>… you book the real exam. That's the whole game."},
   {tab:'curriculum',sel:'.cert-sec',t:"The <b>Learn</b> tab — one section per course. Open one and hit <b>▶ Start</b>: I teach a little, quiz you a little, repeat. Painless, promise."},
@@ -3776,7 +3881,7 @@ const TOUR=[
 ];
 let tourI=-1;
 function mascotSay(html,btns){
-  document.getElementById('bubble-text').innerHTML=html;
+  document.getElementById('bubble-text').innerHTML=html.replaceAll('{B}',buddyName());
   const bb=document.getElementById('bubble-btns');bb.innerHTML='';
   (btns||[['Got it ✓',hideBubble]]).forEach(([label,fn,ghost])=>{
     const btn=document.createElement('button');
@@ -3819,6 +3924,7 @@ function endTour(){
     [['Start learning →',()=>{hideBubble();go('curriculum');}],['Later',hideBubble,true]]);
 }
 function mascotClick(){
+  buddyBoing(); sfx('good');
   if(tourI>=0) return;
   if(!document.getElementById('bubble').classList.contains('hidden')){hideBubble();return;}
   const due=reviewDue().length;
@@ -3827,7 +3933,7 @@ function mascotClick(){
     S.streak>=2?`Streak: <b>${S.streak} days</b> 🔥 — don't you dare break it today.`:null,
     '💪 '+MOTIV[Math.floor(Math.random()*MOTIV.length)],
   ].filter(Boolean);
-  const btns=[['🎈 App tour',()=>{hideBubble();startTour();}]];
+  const btns=[['🎈 App tour',()=>{hideBubble();startTour();}],['🎨 Customize',()=>{hideBubble();openBuddy();}]];
   if(due) btns.push(['🔁 Review now',()=>{hideBubble();go('quiz');startQuiz('review');}]);
   btns.push(['✕',hideBubble,true]);
   mascotSay(lines[Math.floor(Math.random()*lines.length)],btns);
@@ -3921,9 +4027,14 @@ renderAvRow('welcome-avs',activeProf().avatar);
 renderProfileBits();
 // Nimbus
 document.getElementById('mascot').onclick=mascotClick;
+renderBuddy();
 if(!S.tourDone && activeProf().name){ // existing user who never toured: offer once per visit
-  setTimeout(()=>{ if(tourI<0) mascotSay("Psst… I'm <b>Nimbus</b>, your new guide! Want the 60-second tour of everything in here? 🎈",
+  setTimeout(()=>{ if(tourI<0) mascotSay("Psst… I'm <b>{B}</b>, your new guide! Want the 60-second tour of everything in here? 🎈",
     [['🎈 Show me around',()=>{hideBubble();startTour();}],['Maybe later',hideBubble,true]]); },1500);
+}
+// idle life: a little wiggle every so often (skipped if reduced motion)
+if(!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)){
+  setInterval(()=>{ if(tourI<0 && Math.random()<0.5) buddyBoing(); }, 42000);
 }
 renderTip();
 render();

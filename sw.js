@@ -1,5 +1,5 @@
 // AzureQuest service worker — cache-first so the app works fully offline once visited.
-const CACHE = 'azurequest-v5';
+const CACHE = 'azurequest-v6';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon.svg', './apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
