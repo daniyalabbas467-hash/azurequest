@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AzureQuest — Microsoft Certification Journey (AZ-900 · AZ-104 · DP-900 · PL-300)</title>
+<meta name="theme-color" content="#0b1020">
+<link rel="manifest" href="manifest.webmanifest">
+<title>AzureQuest — Microsoft Certification Journey (AZ-900 · AZ-104 · DP-900 · PL-300 · AI-900 · SC-900)</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
   :root{
@@ -287,6 +289,37 @@
   .deck-hint{color:var(--muted);font-size:12px;margin-top:14px}
   .kbd-hint{color:var(--muted);font-size:11px;margin-top:10px;text-align:center}
   .kbd-hint b{background:var(--card2);border:1px solid var(--line);border-radius:5px;padding:1px 7px;font-weight:700}
+  /* new cert pills */
+  .pill.ai900{background:#3a0e34;color:#ff7ad9;border:1px solid #8a2a7a}
+  .pill.sc900{background:#3a1a0e;color:#ff9d5c;border:1px solid #9c4a1c}
+  /* exam simulator: flag + review grid + strikethrough */
+  .flag-btn{background:var(--card2);border:1px solid var(--line);color:var(--muted);border-radius:10px;padding:6px 12px;font-weight:700;font-size:13px;cursor:pointer}
+  .flag-btn.on{color:var(--gold);border-color:var(--gold)}
+  .opt .strike-btn{margin-left:auto;background:none;border:none;color:var(--muted);opacity:.35;cursor:pointer;font-size:14px;padding:2px 6px}
+  .opt .strike-btn:hover{opacity:1;color:var(--red)}
+  .opt.struck > div:nth-child(2){text-decoration:line-through;opacity:.4}
+  .rev-grid{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+  .rev-q{width:44px;height:44px;border-radius:10px;border:2px solid var(--line);background:var(--bg2);color:var(--muted);font-weight:800;cursor:pointer;position:relative}
+  .rev-q.answered{background:#16321a;border-color:var(--green-d);color:var(--text)}
+  .rev-q.flagged:after{content:'⚑';position:absolute;top:-9px;right:-6px;color:var(--gold);font-size:13px}
+  .rev-q:hover{border-color:var(--accent)}
+  /* scenario context panel */
+  .q-context{background:#141f3a;border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:12px;padding:14px 16px;margin:14px 0;font-size:14px;line-height:1.6;color:#cdd8ff}
+  .q-context b{color:#fff}
+  /* cheat sheets */
+  .cheat-block{margin-bottom:26px}
+  .cheat-block h3{font-size:17px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .cheat-block .ltable{font-size:13.5px}
+  .cheat-block code{color:var(--cyan);background:var(--bg2);padding:1px 6px;border-radius:6px;font-size:12.5px}
+  @media print{
+    nav,header .stats-bar,footer,.tab,#fireflies,#confetti-c,.toast,.confirm-bar{display:none!important}
+    body{background:#fff;color:#000}
+    .card{box-shadow:none;border:1px solid #999;background:#fff;color:#000}
+    .cheat-block .ltable th{background:#eee;color:#000}
+    .cheat-block .ltable td,.cheat-block .ltable th{border-color:#999;color:#000}
+    .cheat-block code{color:#000;background:#eee}
+    .card h2,.cheat-block h3{color:#000}
+  }
   /* in-app confirm bar (works where browser dialogs are blocked) */
   .confirm-bar{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(140px);z-index:100;
     background:var(--card2);border:1px solid var(--accent);border-radius:16px;padding:14px 18px;box-shadow:var(--shadow);
@@ -322,6 +355,7 @@
     <button class="tab" data-tab="exam">📝 Mock Exam</button>
     <button class="tab" data-tab="cards">🃏 Flashcards</button>
     <button class="tab" data-tab="labs">🧪 Labs</button>
+    <button class="tab" data-tab="cheats">📋 Cheat Sheets</button>
     <button class="tab" data-tab="roadmap">🗺️ Roadmap</button>
     <button class="tab" data-tab="badges">🏆 Badges</button>
     <button class="tab" data-tab="resources">🔗 Resources</button>
@@ -385,6 +419,12 @@
       <div class="tag">💡 FACT OF THE DAY</div>
       <h3 id="tip-title">Loading...</h3>
       <p id="tip-body"></p>
+    </div>
+
+    <div class="card" id="review-card" style="margin-top:18px;display:none">
+      <h2>🔁 Smart Review — <span id="review-count">0</span> due today</h2>
+      <div class="sub">Questions you got wrong come back on a schedule (1 → 3 → 7 days) until you beat them. Clear the queue daily and weak spots can't survive.</div>
+      <button class="btn blue" onclick="go('quiz');startQuiz('review')">Start review session →</button>
     </div>
 
     <div class="card" id="weak-card" style="margin-top:18px;display:none">
@@ -482,6 +522,14 @@
             <div class="qc-ico">📈</div><div class="qc-name">PL-300 Quiz</div>
             <div class="qc-desc">Power BI Data Analyst question bank</div>
           </div>
+          <div class="quiz-card" onclick="startQuiz('ai900')">
+            <div class="qc-ico">🤖</div><div class="qc-name">AI-900 Quiz</div>
+            <div class="qc-desc">AI Fundamentals question bank</div>
+          </div>
+          <div class="quiz-card" onclick="startQuiz('sc900')">
+            <div class="qc-ico">🛡️</div><div class="qc-name">SC-900 Quiz</div>
+            <div class="qc-desc">Security & Compliance question bank</div>
+          </div>
         </div>
       </div>
       <div class="card">
@@ -507,6 +555,7 @@
           <span id="q-score" style="font-weight:700;color:var(--gold)">Score: 0</span>
         </div>
         <div class="q-bar"><i id="q-bar-fill" style="width:0%"></i></div>
+        <div id="q-context" class="q-context hidden"></div>
         <h2 id="q-question" style="margin:18px 0 6px">…</h2>
         <div id="q-options"></div>
         <div id="q-explain" class="q-explain hidden"></div>
@@ -556,7 +605,20 @@
             <div class="qc-ico">📈</div><div class="qc-name">PL-300 Mock Exam</div>
             <div class="qc-desc">32 questions · 58 min · pass = 700/1000</div>
           </div>
+          <div class="quiz-card" onclick="startExam('ai900')">
+            <div class="qc-ico">🤖</div><div class="qc-name">AI-900 Mock Exam</div>
+            <div class="qc-desc">24 questions · 35 min · pass = 700/1000</div>
+          </div>
+          <div class="quiz-card" onclick="startExam('sc900')">
+            <div class="qc-ico">🛡️</div><div class="qc-name">SC-900 Mock Exam</div>
+            <div class="qc-desc">24 questions · 35 min · pass = 700/1000</div>
+          </div>
         </div>
+      </div>
+      <div class="card">
+        <h2>🧩 Scenario Practice</h2>
+        <div class="sub">Case-study style: one business situation, several linked questions — exactly how the harder AZ-104 / PL-300 questions feel. Explanations after each answer.</div>
+        <div class="grid grid3" id="scenario-list"></div>
       </div>
       <div class="card" id="exam-history-card" style="display:none">
         <h2>📊 Your Mock Exam History</h2>
@@ -572,7 +634,10 @@
       <div class="card">
         <div class="q-top">
           <span id="ex-progress" class="pill az104">Q 1 / 30</span>
-          <span id="ex-timer" style="font-weight:800;font-size:18px">40:00</span>
+          <div style="display:flex;gap:10px;align-items:center">
+            <button class="flag-btn" id="ex-flag" onclick="toggleFlag()">⚑ Flag</button>
+            <span id="ex-timer" style="font-weight:800;font-size:18px">40:00</span>
+          </div>
         </div>
         <div class="q-bar" style="margin-top:12px"><i id="ex-bar" style="width:0%"></i></div>
         <h2 id="ex-question" style="margin:18px 0 10px">…</h2>
@@ -580,9 +645,23 @@
         <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
           <button class="btn ghost" id="ex-prev" onclick="examNav(-1)">← Previous</button>
           <button class="btn blue" id="ex-next" onclick="examNav(1)">Next →</button>
+          <button class="btn ghost" onclick="showExamReview()">🗺 Review all</button>
           <button class="btn" id="ex-submit" onclick="submitExam(false)" style="margin-left:auto">Submit exam</button>
         </div>
         <div class="cd-label" style="margin-top:10px" id="ex-answered">0 answered</div>
+        <div class="kbd-hint" style="text-align:left">✕ next to an option strikes it out (elimination) · <b>⚑</b> marks for review</div>
+      </div>
+    </div>
+
+    <div id="exam-review" class="hidden">
+      <div class="card">
+        <h2>🗺 Review your answers</h2>
+        <div class="sub">Green = answered · grey = unanswered · ⚑ = flagged. Click any question to jump back to it.</div>
+        <div class="rev-grid" id="rev-grid"></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn ghost" onclick="hideExamReview()">← Back to exam</button>
+          <button class="btn" onclick="submitExam(false)" style="margin-left:auto">Submit exam</button>
+        </div>
       </div>
     </div>
 
@@ -595,6 +674,7 @@
         <div id="exr-domains" style="text-align:left;max-width:460px;margin:18px auto"></div>
         <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:12px">
           <button class="btn blue" id="exr-retry">↻ Retake</button>
+          <button class="btn" onclick="shareScore()">📤 Share scorecard</button>
           <button class="btn ghost" onclick="go('exam')">Back to Mock Exams</button>
           <button class="btn ghost" onclick="go('curriculum')">📚 Review weak areas</button>
         </div>
@@ -633,6 +713,19 @@
       <h2>🧪 Hands-On Labs</h2>
       <div class="sub">The single biggest reason people pass AZ-104. Do these in your free Azure account — step by step. Tick each step; finishing a lab earns XP.</div>
       <div id="labs"></div>
+    </div>
+  </section>
+
+  <!-- CHEAT SHEETS -->
+  <section id="tab-cheats" class="hidden">
+    <div class="card">
+      <div class="q-top">
+        <h2 style="margin:0">📋 Cheat Sheets — last-mile revision</h2>
+        <button class="btn ghost" style="padding:8px 14px" onclick="window.print()">🖨️ Print / PDF</button>
+      </div>
+      <div class="sub" style="margin-top:6px">The tables worth re-reading the night before. Filter by cert, print the lot, stick it on the wall.</div>
+      <div class="filter-chips" id="cheat-chips"></div>
+      <div id="cheats"></div>
     </div>
   </section>
 
@@ -679,6 +772,8 @@ const CERTS={
   az104:{name:'AZ-104',full:'Azure Administrator',ico:'🚀'},
   dp900:{name:'DP-900',full:'Azure Data Fundamentals',ico:'📊'},
   pl300:{name:'PL-300',full:'Power BI Data Analyst',ico:'📈'},
+  ai900:{name:'AI-900',full:'Azure AI Fundamentals',ico:'🤖'},
+  sc900:{name:'SC-900',full:'Security & Compliance Fundamentals',ico:'🛡️'},
 };
 const CERT_ORDER=Object.keys(CERTS);
 function pillOf(c){return `<span class="pill ${c}">${CERTS[c].name}</span>`;}
@@ -854,6 +949,75 @@ const CURRICULUM=[
     'Rebuild your report from scratch without help',
     'Score 85%+ on practice consistently',
     '✅ Book & PASS PL-300 📈',
+  ]},
+  /* ===== AI-900 · Azure AI Fundamentals ===== */
+  {cert:'ai900',week:'AI-900 · Week 1',title:'AI Workloads & Responsible AI',sub:'15–20% of exam',items:[
+    'Common AI workloads: prediction, computer vision, NLP, document intelligence, generative AI',
+    'Responsible AI: fairness, reliability & safety, privacy & security',
+    'Responsible AI: inclusiveness, transparency, accountability',
+    'Match a business problem to the right AI workload',
+  ]},
+  {cert:'ai900',week:'AI-900 · Week 1–2',title:'Machine Learning Fundamentals',sub:'15–20% of exam',items:[
+    'Supervised learning: regression vs classification',
+    'Unsupervised learning: clustering',
+    'Features & labels; training vs validation datasets',
+    'Deep learning & neural networks (the idea, not the math)',
+    'Azure Machine Learning: automated ML, designer, compute',
+  ]},
+  {cert:'ai900',week:'AI-900 · Week 2',title:'Computer Vision & NLP',sub:'30–40% of exam',items:[
+    'Vision: image classification vs object detection vs OCR',
+    'Facial detection/analysis; Azure AI Vision service',
+    'NLP: key phrase extraction, entity recognition, sentiment',
+    'Language detection, translation, speech-to-text & text-to-speech',
+    'Azure AI Language, Translator, Speech services; conversational AI',
+  ]},
+  {cert:'ai900',week:'AI-900 · Week 3',title:'Generative AI on Azure',sub:'20–25% of exam',items:[
+    'What generative AI does; large language models in plain words',
+    'Azure OpenAI in Foundry Models: what it offers',
+    'Prompts, completions, tokens & grounding',
+    'Copilots & agents; responsible generative AI',
+    '🧪 LAB: Try Vision/Language studios + a generative playground',
+  ]},
+  {cert:'ai900',week:'AI-900 · Week 3–4',title:'AI-900: Exam Prep & Sit',sub:'Buffer + test',items:[
+    'Take the free official AI-900 practice assessment',
+    'Repeat until scoring 85%+ consistently',
+    'Review weak domains',
+    '✅ Book & PASS AI-900 🤖',
+  ]},
+  /* ===== SC-900 · Security, Compliance & Identity ===== */
+  {cert:'sc900',week:'SC-900 · Week 1',title:'Security & Identity Concepts',sub:'10–15% of exam',items:[
+    'Zero Trust: verify explicitly, least privilege, assume breach',
+    'Shared responsibility & defense in depth (recap, security lens)',
+    'Encryption at rest vs in transit; hashing',
+    'Identity as the security perimeter; authentication vs authorization',
+    'Identity providers, directory services & federation',
+  ]},
+  {cert:'sc900',week:'SC-900 · Week 1–2',title:'Microsoft Entra',sub:'25–30% of exam',items:[
+    'Entra ID: users, groups, devices, hybrid identity',
+    'Authentication: MFA, passwordless, password protection',
+    'Conditional Access & its signals',
+    'Roles & RBAC in Entra; Privileged Identity Management (PIM)',
+    'Identity Protection & access reviews (identity governance)',
+  ]},
+  {cert:'sc900',week:'SC-900 · Week 2–3',title:'Microsoft Security Solutions',sub:'35–40% of exam',items:[
+    'Azure infrastructure security: NSGs, Firewall, DDoS protection, Key Vault',
+    'Microsoft Defender for Cloud: posture management (CSPM) & workload protection',
+    'Microsoft Sentinel: SIEM & SOAR in plain words',
+    'Microsoft Defender XDR: for Office 365, Endpoint, Identity, Cloud Apps',
+    'Microsoft Intune & endpoint management basics',
+  ]},
+  {cert:'sc900',week:'SC-900 · Week 3',title:'Microsoft Compliance Solutions',sub:'20–25% of exam',items:[
+    'Service Trust Portal & Microsoft\'s privacy principles',
+    'Microsoft Purview compliance portal & Compliance Manager',
+    'Information protection: sensitivity labels, DLP, retention',
+    'Insider risk, eDiscovery & audit',
+    'Resource governance recap: Azure Policy, locks, blueprints',
+  ]},
+  {cert:'sc900',week:'SC-900 · Week 3–4',title:'SC-900: Exam Prep & Sit',sub:'Buffer + test',items:[
+    'Take the free official SC-900 practice assessment',
+    'Repeat until scoring 85%+ consistently',
+    'Review weak domains',
+    '✅ Book & PASS SC-900 🛡️',
   ]},
 ];
 
@@ -1170,6 +1334,56 @@ const QUESTIONS=[
   {cert:'pl300',topic:'Manage & Secure',q:'For an organization, refresh through a gateway should use:',o:['Personal mode on someone\'s laptop','The standard on-premises data gateway on a server','No gateway','A USB stick'],a:1,e:'Standard mode is centrally managed and serves many users/sources; personal mode is single-user.'},
   {cert:'pl300',topic:'Manage & Secure',q:'You changed a report in the workspace but app users still see the old version because:',o:['Apps update instantly','The app must be UPDATED to publish workspace changes','RLS blocks it','The gateway is off'],a:1,e:'Apps are snapshots — click Update app to push workspace changes to the audience.'},
   {cert:'pl300',topic:'Manage & Secure',q:'Tracking which reports are actually being viewed uses:',o:['Usage metrics reports','RLS','DAX Studio','A pie chart'],a:0,e:'Usage metrics show views/viewers per report — your adoption evidence.'},
+  /* ===== AI-900 bank ===== */
+  {cert:'ai900',topic:'AI Workloads',q:'Predicting next month\'s ice-cream sales from historical data is which workload?',o:['Computer vision','Machine learning (prediction)','Generative AI','OCR'],a:1,e:'Forecasting from data = a machine learning prediction workload.'},
+  {cert:'ai900',topic:'AI Workloads',q:'Extracting the total and date from thousands of scanned receipts uses:',o:['Document intelligence','Clustering','Text-to-speech','A gauge'],a:0,e:'Azure AI Document Intelligence extracts structured fields from forms and receipts.'},
+  {cert:'ai900',topic:'AI Workloads',q:'A model that writes marketing copy from a short brief is:',o:['Classification','Generative AI','Object detection','Regression'],a:1,e:'Creating new content = generative AI.'},
+  {cert:'ai900',topic:'AI Workloads',q:'Which responsible AI principle requires the system to work well for people with disabilities?',o:['Fairness','Inclusiveness','Accountability','Privacy'],a:1,e:'Inclusiveness = AI should empower everyone, including people with disabilities.'},
+  {cert:'ai900',topic:'AI Workloads',q:'Ensuring humans remain answerable for an AI system\'s decisions is:',o:['Accountability','Transparency','Reliability','Tokenization'],a:0,e:'Accountability keeps people/organizations responsible for AI outcomes.'},
+  {cert:'ai900',topic:'AI Workloads',q:'A self-driving feature must fail safely in bad weather. Which principle?',o:['Reliability & safety','Fairness','Inclusiveness','Privacy'],a:0,e:'Reliability & safety = perform dependably and fail without causing harm.'},
+  {cert:'ai900',topic:'Machine Learning',q:'Predicting whether an email is spam or not is:',o:['Regression','Classification','Clustering','Translation'],a:1,e:'A category output (spam/not spam) = classification.'},
+  {cert:'ai900',topic:'Machine Learning',q:'Predicting a house\'s sale PRICE is:',o:['Classification','Regression','Clustering','OCR'],a:1,e:'A numeric output = regression.'},
+  {cert:'ai900',topic:'Machine Learning',q:'Finding natural customer segments in unlabeled data is:',o:['Supervised learning','Clustering (unsupervised)','Regression','Sentiment analysis'],a:1,e:'No labels + grouping = clustering.'},
+  {cert:'ai900',topic:'Machine Learning',q:'In ML, the columns used as inputs are called:',o:['Labels','Features','Tokens','Slicers'],a:1,e:'Features are inputs; the label is what you predict.'},
+  {cert:'ai900',topic:'Machine Learning',q:'Why hold back a validation dataset?',o:['To save storage','To test the model on data it never trained on','To make training slower','It\'s required by law'],a:1,e:'Validation data measures real generalization, not memorization.'},
+  {cert:'ai900',topic:'Machine Learning',q:'Which Azure ML feature builds pipelines by drag-and-drop, no code?',o:['The designer','A Bicep file','KQL','Notebooks only'],a:0,e:'Azure ML designer is the visual, no-code pipeline canvas.'},
+  {cert:'ai900',topic:'Vision & Language',q:'Labeling a whole photo as "dog" or "cat" is:',o:['Object detection','Image classification','OCR','Face analysis'],a:1,e:'One label for the whole image = classification. Boxes around items = detection.'},
+  {cert:'ai900',topic:'Vision & Language',q:'Reading the text off a photographed street sign uses:',o:['OCR','Clustering','Regression','A slicer'],a:0,e:'Optical character recognition extracts text from images.'},
+  {cert:'ai900',topic:'Vision & Language',q:'Identifying that "Paris" and "Eiffel Tower" are places in a text is:',o:['Sentiment analysis','Entity recognition','Translation','Speech-to-text'],a:1,e:'Named entity recognition finds people, places, organizations, dates in text.'},
+  {cert:'ai900',topic:'Vision & Language',q:'Converting a support call recording into searchable text uses:',o:['Text-to-speech','Speech-to-text','Object detection','DLP'],a:1,e:'Speech-to-text transcribes audio into text.'},
+  {cert:'ai900',topic:'Vision & Language',q:'Which service translates documents across dozens of languages?',o:['Azure AI Translator','Azure Bastion','Key Vault','VM Insights'],a:0,e:'Azure AI Translator handles text/document translation.'},
+  {cert:'ai900',topic:'Vision & Language',q:'A bot that answers questions from your FAQ pages uses:',o:['Question answering','Object detection','Regression','GRS'],a:0,e:'Question answering (Azure AI Language) powers FAQ bots.'},
+  {cert:'ai900',topic:'Generative AI',q:'In an LLM interaction, your input text is called the:',o:['Completion','Prompt','Token bucket','Label'],a:1,e:'Prompt in → completion out.'},
+  {cert:'ai900',topic:'Generative AI',q:'LLMs process text in chunks called:',o:['Pixels','Tokens','Blobs','Frames'],a:1,e:'Tokens are the units models read and generate; pricing and limits count them.'},
+  {cert:'ai900',topic:'Generative AI',q:'Making a model answer from your OWN documents is called:',o:['Hallucination','Grounding / RAG','Overfitting','Clustering'],a:1,e:'Retrieval-augmented generation feeds your content to the model as context.'},
+  {cert:'ai900',topic:'Generative AI',q:'A confident but fabricated answer from an LLM is a:',o:['Feature','Hallucination','Token','Completion filter'],a:1,e:'Hallucinations are fluent falsehoods — verify important outputs.'},
+  {cert:'ai900',topic:'Generative AI',q:'Azure OpenAI\'s advantage over consumer chatbots for enterprises is:',o:['Funnier answers','Azure security, private networking, and responsible-AI controls','It is always free','No models'],a:1,e:'Same model families + enterprise controls, compliance, and data privacy.'},
+  {cert:'ai900',topic:'Generative AI',q:'An AI feature embedded in Word/Excel to draft and summarize is an example of a:',o:['Copilot','Cluster','Recovery vault','UDR'],a:0,e:'Copilots embed generative AI inside productivity tools.'},
+  /* ===== SC-900 bank ===== */
+  {cert:'sc900',topic:'Security Concepts',q:'The three Zero Trust principles are:',o:['Trust but verify, allow all, log nothing','Verify explicitly, least privilege, assume breach','Encrypt, delete, repeat','Deny all, always'],a:1,e:'Verify explicitly · use least-privilege access · assume breach.'},
+  {cert:'sc900',topic:'Security Concepts',q:'Storing only one-way fingerprints of passwords uses:',o:['Encryption in transit','Hashing','Compression','Tokenization'],a:1,e:'Hashing is one-way — you verify against the hash, never store the password.'},
+  {cert:'sc900',topic:'Security Concepts',q:'TLS on a website is an example of:',o:['Encryption at rest','Encryption in transit','Hashing','DLP'],a:1,e:'TLS protects data moving between client and server.'},
+  {cert:'sc900',topic:'Security Concepts',q:'Deciding what an authenticated user is ALLOWED to do is:',o:['Authentication','Authorization','Federation','Auditing'],a:1,e:'AuthZ governs permissions after AuthN proves identity.'},
+  {cert:'sc900',topic:'Security Concepts',q:'Trusting another organization\'s identity provider so their users can sign in to your app is:',o:['Hashing','Federation','A UDR','Peering'],a:1,e:'Federation establishes trust between identity providers.'},
+  {cert:'sc900',topic:'Entra ID',q:'Banning weak and organization-specific passwords in Entra is:',o:['Password protection','A resource lock','DLP','SIEM'],a:0,e:'Entra password protection blocks banned/weak password lists.'},
+  {cert:'sc900',topic:'Entra ID',q:'Requiring MFA only for sign-ins from unfamiliar locations is done with:',o:['A static rule for everyone','Conditional Access policies','An NSG','A budget'],a:1,e:'Conditional Access applies if/then controls based on signals like location and risk.'},
+  {cert:'sc900',topic:'Entra ID',q:'Just-in-time, approval-based, time-boxed admin roles come from:',o:['PIM (Privileged Identity Management)','Permanent Global Admin','A shared mailbox','Key Vault'],a:0,e:'PIM eliminates standing privileged access.'},
+  {cert:'sc900',topic:'Entra ID',q:'Periodically re-confirming that users still need their group memberships uses:',o:['Access reviews','A pie chart','DDoS protection','Autoscale'],a:0,e:'Access reviews are identity governance — attest or remove access on a schedule.'},
+  {cert:'sc900',topic:'Entra ID',q:'Detecting a leaked-credential sign-in and forcing a password reset is:',o:['Entra ID Protection','Cost Management','AzCopy','Blob versioning'],a:0,e:'ID Protection detects risk events and can automate remediation.'},
+  {cert:'sc900',topic:'Entra ID',q:'Guest partner access to your apps uses:',o:['B2B external identities','Shared passwords','A VPN for everyone','Local accounts'],a:0,e:'Entra B2B invites external users as guests under your governance.'},
+  {cert:'sc900',topic:'Security Solutions',q:'Application secrets, keys, and certificates belong in:',o:['Azure Key Vault','Source code','A wiki page','An NSG'],a:0,e:'Key Vault stores and access-controls secrets with full auditing.'},
+  {cert:'sc900',topic:'Security Solutions',q:'Secure score and hardening recommendations for your cloud estate come from:',o:['Microsoft Defender for Cloud','Intune','eDiscovery','Q&A visual'],a:0,e:'Defender for Cloud = posture management (CSPM) + workload protection.'},
+  {cert:'sc900',topic:'Security Solutions',q:'Microsoft Sentinel is best described as:',o:['A cloud-native SIEM with SOAR automation','A DNS server','A storage tier','A DAX function'],a:0,e:'Sentinel collects/analyzes security data at scale and automates responses with playbooks.'},
+  {cert:'sc900',topic:'Security Solutions',q:'Protecting mailboxes from phishing campaigns is the job of:',o:['Defender for Office 365','Defender for Identity','Azure Firewall','Purview'],a:0,e:'Defender for Office 365 covers email and collaboration threats.'},
+  {cert:'sc900',topic:'Security Solutions',q:'EDR (detecting and responding to attacks on laptops) comes from:',o:['Defender for Endpoint','Cost Management','Key Vault','Azure DNS'],a:0,e:'Defender for Endpoint is the device/EDR member of the XDR family.'},
+  {cert:'sc900',topic:'Security Solutions',q:'Managing device enrollment, compliance policies, and app deployment is:',o:['Microsoft Intune','Sentinel','DDoS Protection','Bicep'],a:0,e:'Intune is Microsoft\'s endpoint management solution.'},
+  {cert:'sc900',topic:'Security Solutions',q:'Absorbing massive volumetric attacks on your public endpoints uses:',o:['Azure DDoS Protection','A resource lock','SSPR','Blob lifecycle'],a:0,e:'DDoS Protection defends against volumetric network attacks.'},
+  {cert:'sc900',topic:'Compliance',q:'Assessing your org against GDPR with a score and improvement actions uses:',o:['Compliance Manager','VM Insights','AzCopy','Autoscale'],a:0,e:'Compliance Manager in the Purview portal scores regulatory compliance.'},
+  {cert:'sc900',topic:'Compliance',q:'Microsoft\'s own audit reports and certifications are published on:',o:['The Service Trust Portal','GitHub only','A billboard','Your invoice'],a:0,e:'The Service Trust Portal hosts Microsoft\'s compliance documentation.'},
+  {cert:'sc900',topic:'Compliance',q:'Stopping credit card numbers from being emailed externally is:',o:['DLP (data loss prevention)','A sensitivity label alone','Retention','Insider risk'],a:0,e:'DLP policies detect and block sensitive data exfiltration.'},
+  {cert:'sc900',topic:'Compliance',q:'Classification that travels WITH a document, applying encryption/watermarks, is:',o:['A sensitivity label','A retention policy','An access review','A UDR'],a:0,e:'Sensitivity labels persist protection wherever the file goes.'},
+  {cert:'sc900',topic:'Compliance',q:'Keeping records for 7 years then auto-deleting them uses:',o:['Retention policies','DLP','PIM','Peering'],a:0,e:'Retention policies govern the keep/delete lifecycle of content.'},
+  {cert:'sc900',topic:'Compliance',q:'Searching and legally holding content for litigation is:',o:['eDiscovery','Insider risk','Secure score','SSPR'],a:0,e:'eDiscovery finds, holds, and exports content for legal matters.'},
 ];
 
 /* ---------- GLOSSARY (flashcards) ---------- */
@@ -1302,6 +1516,46 @@ const GLOSSARY=[
   ['Row-level security (RLS)','DAX role filters restricting which ROWS a user sees.','pl300'],
   ['Endorsement','Promoted or Certified badges marking trustworthy content.','pl300'],
   ['Sensitivity label','Purview classification (e.g. Confidential) that persists on export.','pl300'],
+  /* AI-900 terms */
+  ['Regression','Supervised ML predicting a NUMBER (price, demand).','ai900'],
+  ['Classification','Supervised ML predicting a CATEGORY (spam / not spam).','ai900'],
+  ['Clustering','Unsupervised ML finding natural groups in unlabeled data.','ai900'],
+  ['Features & label','Features = model inputs; label = what you predict.','ai900'],
+  ['Training vs validation','Train on one split; test generalization on held-back data.','ai900'],
+  ['Automated ML','Azure ML tries many algorithms and picks the best automatically.','ai900'],
+  ['Image classification','One label for the whole image.','ai900'],
+  ['Object detection','Find and box each object in an image.','ai900'],
+  ['OCR','Read text out of images/documents.','ai900'],
+  ['Sentiment analysis','Score text as positive/negative.','ai900'],
+  ['Entity recognition','Find people, places, dates in text.','ai900'],
+  ['Document Intelligence','Extract structured fields from invoices/receipts/IDs.','ai900'],
+  ['LLM','Large language model — predicts the next token; powers generative AI.','ai900'],
+  ['Prompt & completion','Your input to a model, and its generated output.','ai900'],
+  ['Token','The text chunks LLMs read/generate; limits & pricing count them.','ai900'],
+  ['Grounding / RAG','Feeding YOUR documents to the model so answers use your data.','ai900'],
+  ['Hallucination','Confident but fabricated model output — verify important answers.','ai900'],
+  ['Copilot','Generative AI embedded in a tool (M365, GitHub).','ai900'],
+  ['Responsible AI (6)','Fairness, Reliability & safety, Privacy, Inclusiveness, Transparency, Accountability.','ai900'],
+  /* SC-900 terms */
+  ['Zero Trust principles','Verify explicitly · least privilege · assume breach.','sc900'],
+  ['AuthN vs AuthZ','Authentication = who you are; Authorization = what you may do.','sc900'],
+  ['Hashing','One-way fingerprint — how passwords are stored.','sc900'],
+  ['Federation','Trusting another organization\'s identity provider.','sc900'],
+  ['Hybrid identity','On-prem AD synced to Entra ID (Entra Connect).','sc900'],
+  ['Conditional Access','If/then sign-in policies using signals (location, device, risk).','sc900'],
+  ['PIM','Privileged Identity Management — just-in-time, approved, time-boxed admin roles.','sc900'],
+  ['Entra ID Protection','Detects risky sign-ins (impossible travel, leaked creds) and auto-responds.','sc900'],
+  ['Access reviews','Periodic attestation that users still need their access.','sc900'],
+  ['Key Vault','Stores secrets, keys, certificates with access control + audit.','sc900'],
+  ['Defender for Cloud','Cloud security posture (secure score) + workload protection.','sc900'],
+  ['Microsoft Sentinel','Cloud-native SIEM + SOAR (collect logs, hunt, auto-respond).','sc900'],
+  ['Defender XDR family','Office 365 = email · Endpoint = devices · Identity = AD attacks · Cloud Apps = SaaS.','sc900'],
+  ['Intune','Endpoint management: enrollment, compliance policies, app deployment.','sc900'],
+  ['Compliance Manager','Scores your org against regulations with improvement actions.','sc900'],
+  ['Sensitivity labels (SC)','Classify & protect content; protection travels with the file.','sc900'],
+  ['DLP','Data loss prevention — blocks sensitive info from leaving.','sc900'],
+  ['Retention policy','Keep/delete content on a schedule.','sc900'],
+  ['eDiscovery','Search & legally hold content for litigation.','sc900'],
 ];
 
 /* ---------- HANDS-ON LABS ---------- */
@@ -1395,6 +1649,22 @@ const LABS=[
     'CALCULATE practice: West Sales = CALCULATE([Total Sales], Customer[Region]="West").',
     'Time intelligence: Sales YTD = TOTALYTD([Total Sales], \'Date\'[Date]).',
     'Drop each measure into a card/table and slice by region — watch filter context work.',
+  ]},
+  {cert:'ai900',title:'Lab · Touch the AI services',time:'~30 min',steps:[
+    'Open Vision Studio (portal.vision.cognitive.azure.com) → try "Extract text from images" with a photo — that\'s OCR.',
+    'Try "Detect common objects in images" — note the bounding boxes (object detection vs classification!).',
+    'Open Language Studio (language.cognitive.azure.com) → run Sentiment analysis on a product review.',
+    'Run Named Entity Recognition on a news paragraph — watch it find people/places/dates.',
+    'Try a generative playground (e.g. Copilot or Azure AI Foundry if you have access): give the same prompt twice — notice varied completions.',
+    'Ask the generative model something about your own niche topic and fact-check it — spot any hallucination.',
+  ]},
+  {cert:'sc900',title:'Lab · Tour the security portals',time:'~25 min',steps:[
+    'Portal → Microsoft Entra ID → Security → note Conditional Access and Identity Protection entries.',
+    'Entra ID → Roles and administrators → open Global Administrator → see role assignment options (imagine PIM: eligible vs active).',
+    'Portal → search "Microsoft Defender for Cloud" → view your Secure score and recommendations.',
+    'Search "Key Vault" → create one in rg-lab → add a secret → note access configuration options.',
+    'Visit the Service Trust Portal (servicetrust.microsoft.com) — find a compliance report.',
+    'If you have M365: visit the Purview portal (purview.microsoft.com) and locate Compliance Manager. Clean up the Key Vault after.',
   ]},
   {cert:'pl300',title:'Lab 12 · Report, publish & RLS',time:'~35 min',steps:[
     'Build page 1: a card (Total Sales), bar chart (sales by product), line chart (sales by month), a slicer.',
@@ -1667,6 +1937,81 @@ const PATH={
  {c:C,t:'🏁 The analyst finish line',h:`Take the <b>free official PL-300 practice assessment</b>; aim <b>85%+</b>. Rebuild your lab report from scratch without help — if you can, you're ready. Pass and you're a certified <b>Power BI Data Analyst</b>: pair it with AZ-900/DP-900 and your CV covers cloud + data end to end. 🎉`},
  {qq:'The strongest sign you\'re ready to book PL-300:',o:['You finished one video course','85%+ practice scores AND you can rebuild your report unaided','You installed Power BI','Your streak is 30 days'],a:1,e:'Consistent practice scores plus real building fluency = book it.'},
 ],
+/* ===== AI-900 lessons ===== */
+20:[
+ {c:C,t:'🤖 The AI workload menu',h:`Match the problem to the workload: <span class="kw">prediction/ML</span> = forecast from data (will this customer churn?). <span class="kw">Computer vision</span> = understand images. <span class="kw">NLP</span> = understand language. <span class="kw">Document intelligence</span> = extract fields from forms/receipts. <span class="kw">Generative AI</span> = create new content (text, images, code).<div class="callout exam"><span class="c-tag">🎯 EXAM TIP</span>Half of AI-900 is "which workload is this scenario?" — practice the mapping until it's reflex.</div>`},
+ {qq:'Automatically pulling totals and dates out of scanned invoices is which workload?',o:['Clustering','Document intelligence','Generative AI','Speech'],a:1,e:'Document intelligence extracts structured fields from forms and receipts.'},
+ {c:C,t:'⚖️ Responsible AI — the six principles',h:`<span class="kw">Fairness</span> = no group disadvantaged. <span class="kw">Reliability & safety</span> = works under stress, fails safely. <span class="kw">Privacy & security</span> = protect data. <span class="kw">Inclusiveness</span> = works for everyone, including disabilities. <span class="kw">Transparency</span> = people understand how it decides. <span class="kw">Accountability</span> = humans stay answerable.<div class="callout analogy"><span class="c-tag">🧠 MNEMONIC</span>"FRPITA" — Fair, Reliable, Private, Inclusive, Transparent, Accountable.</div>`},
+ {qq:'A loan model that scores one demographic group worse violates which principle?',o:['Transparency','Fairness','Inclusiveness','Reliability'],a:1,e:'Fairness = comparable outcomes across groups; biased scoring is the textbook violation.'},
+ {qq:'Users should be able to understand WHY the model made its decision. That principle is:',o:['Privacy','Transparency','Accountability','Safety'],a:1,e:'Transparency means the system\'s behavior and limits are explainable.'},
+],
+21:[
+ {c:C,t:'🎓 Supervised learning: regression vs classification',h:`Supervised = learn from <b>labeled</b> examples (features → known label). <span class="kw">Regression</span> predicts a <b>number</b> (house price, demand). <span class="kw">Classification</span> predicts a <b>category</b> (spam / not spam; which species).<div class="callout exam"><span class="c-tag">🎯 EXAM TIP</span>Ask "is the answer a number or a category?" Number → regression. Category → classification.</div>`},
+ {qq:'Predicting tomorrow\'s temperature in degrees is:',o:['Classification','Regression','Clustering','OCR'],a:1,e:'A numeric prediction = regression.'},
+ {c:C,t:'🧩 Unsupervised learning & the vocabulary',h:`<span class="kw">Clustering</span> = find natural groups in UNlabeled data (segment customers with no predefined categories). Vocabulary: <span class="kw">features</span> = the inputs; <span class="kw">label</span> = what you predict; split data into <span class="kw">training</span> and <span class="kw">validation</span> sets so you can test on data the model never saw. <span class="kw">Deep learning</span> = neural networks with many layers.`},
+ {qq:'Grouping shoppers into segments WITHOUT predefined categories is:',o:['Regression','Classification','Clustering','Translation'],a:2,e:'No labels + finding natural groups = clustering (unsupervised).'},
+ {c:C,t:'⚙️ Azure Machine Learning',h:`The workbench for ML on Azure: <span class="kw">Automated ML</span> tries many algorithms for you and picks the best. The <span class="kw">designer</span> = drag-and-drop pipelines, no code. Managed <span class="kw">compute</span> trains models; endpoints serve predictions. You bring data, it handles the machinery.`},
+ {qq:'A team with little data-science experience wants the best model found automatically. Use:',o:['Automated ML','Manual C++ coding','A pie chart','A VPN'],a:0,e:'AutoML trains and compares many models automatically and recommends the best.'},
+],
+22:[
+ {c:C,t:'👁️ Computer vision tasks',h:`<span class="kw">Image classification</span> = one label for the whole image ("this is a cat"). <span class="kw">Object detection</span> = find and BOX each thing ("3 cars here, 2 people there"). <span class="kw">OCR</span> = read text in images. <span class="kw">Facial detection/analysis</span> = find faces, estimate attributes. Service: <span class="kw">Azure AI Vision</span>; train your own with custom models.`},
+ {qq:'Counting and locating each helmet in a construction-site photo is:',o:['Image classification','Object detection','OCR','Sentiment analysis'],a:1,e:'Locating multiple objects with bounding boxes = object detection. One-label-per-image = classification.'},
+ {c:C,t:'💬 NLP tasks',h:`<span class="kw">Key phrase extraction</span> = main talking points. <span class="kw">Entity recognition</span> = find people/places/dates. <span class="kw">Sentiment analysis</span> = positive/negative score. <span class="kw">Language detection</span>, <span class="kw">translation</span> (Azure AI Translator), <span class="kw">speech-to-text / text-to-speech</span> (Azure AI Speech). Service hub: <span class="kw">Azure AI Language</span>.`},
+ {qq:'Scoring customer reviews as positive or negative uses:',o:['OCR','Sentiment analysis','Object detection','Clustering'],a:1,e:'Sentiment analysis scores text positivity/negativity — classic NLP.'},
+ {c:C,t:'🗣️ Conversational AI & document intelligence',h:`<span class="kw">Question answering</span> + <span class="kw">conversational language understanding</span> power bots (Azure AI Bot Service ecosystem). <span class="kw">Azure AI Document Intelligence</span> extracts structured data from invoices/receipts/IDs with prebuilt or custom models.`},
+ {qq:'A website chatbot answering FAQs from your help articles uses:',o:['Object detection','Question answering / conversational AI','Regression','GRS storage'],a:1,e:'Question answering + conversational language understanding = FAQ bots.'},
+],
+23:[
+ {c:C,t:'✨ Generative AI in plain words',h:`Generative AI <b>creates</b> new content — text, images, code — instead of just labeling existing content. <span class="kw">Large language models (LLMs)</span> are trained on huge text corpora to predict the next <span class="kw">token</span>; that simple trick, at scale, produces fluent answers. Your input is the <span class="kw">prompt</span>; the output is the <span class="kw">completion</span>.`},
+ {qq:'Generative AI differs from classification because it:',o:['Only labels data','Creates new content (text, images, code)','Needs no computers','Is always offline'],a:1,e:'Generation produces new content; classification assigns labels to existing content.'},
+ {c:C,t:'🏭 Azure OpenAI & copilots',h:`<span class="kw">Azure OpenAI in Foundry Models</span> = OpenAI-family models with Azure's security, private networking, and responsible-AI controls. <span class="kw">Grounding / RAG</span> = give the model your documents so answers cite YOUR data. <span class="kw">Copilots</span> embed generative AI into tools (Microsoft 365 Copilot, GitHub Copilot); <span class="kw">agents</span> take actions, not just answers.`},
+ {qq:'Making an LLM answer from YOUR company documents is called:',o:['Overfitting','Grounding / retrieval-augmented generation','Clustering','Tokenization only'],a:1,e:'Grounding (RAG) retrieves your content and feeds it to the model as context.'},
+ {c:C,t:'🛡️ Responsible generative AI',h:`Generative systems add risks: hallucinations (confident wrong answers), harmful content, prompt injection. Mitigations: content filters, human oversight, grounding to trusted data, transparency notes to users. The six responsible-AI principles apply — plus <b>always verify important outputs</b>.`},
+ {qq:'An LLM confidently inventing a citation that doesn\'t exist is called:',o:['Grounding','A hallucination','Tokenization','Fairness'],a:1,e:'Hallucination = fluent but fabricated output — why grounding and verification matter.'},
+],
+24:[
+ {c:C,t:'📝 AI-900 exam facts',h:`Passing score: <b>700/1000</b>. ~40–50 questions, ~45–65 min, no case studies. Heavy on "match the scenario to the workload/service" — if you know the workload menu and the responsible-AI principles cold, you're most of the way there.`},
+ {qq:'What score passes AI-900?',o:['500','700','850','900'],a:1,e:'700/1000, same as every exam in this app.'},
+ {c:C,t:'🎯 Prep routine',h:`Take the free official AI-900 practice assessment until you're at <b>85%+ consistently</b>. Spend an hour in the Vision/Language studios (Labs tab) — seeing the services run makes the questions concrete. AI-900 pairs naturally with DP-900 and takes most people 2–3 weeks.`},
+ {qq:'When should you book AI-900?',o:['Immediately','At 85%+ consistent practice scores','After AZ-104 only','Never'],a:1,e:'Same golden rule as every cert here: 85%+ consistently, then book.'},
+],
+/* ===== SC-900 lessons ===== */
+25:[
+ {c:C,t:'🏰 Zero Trust & the security mindset',h:`<span class="kw">Zero Trust</span> has three principles: <b>verify explicitly</b> (authenticate every request), <b>least privilege</b> (just-enough access, just-in-time), <b>assume breach</b> (segment, encrypt, monitor as if attackers are inside). <span class="kw">Defense in depth</span> layers controls: physical → identity → perimeter → network → compute → app → data.`},
+ {qq:'"Assume breach" means you should:',o:['Give everyone admin','Segment, encrypt, and monitor as if attackers are already inside','Turn off logging','Trust the internal network'],a:1,e:'Assume breach designs controls that limit damage even when a layer fails.'},
+ {c:C,t:'🔐 Crypto & identity basics',h:`<span class="kw">Encryption at rest</span> protects stored data; <span class="kw">in transit</span> protects data moving on networks; <span class="kw">hashing</span> = one-way fingerprints (passwords). <span class="kw">Authentication</span> = proving WHO you are; <span class="kw">authorization</span> = what you MAY do. The <span class="kw">identity provider</span> (like Entra ID) issues tokens; <span class="kw">federation</span> = trusting another org's identity provider.`},
+ {qq:'Authentication vs authorization:',o:['Same thing','AuthN = who you are; AuthZ = what you can do','AuthZ comes first always','Both mean encryption'],a:1,e:'Authenticate identity first, then authorize the actions it may perform.'},
+],
+26:[
+ {c:C,t:'🪪 Entra ID essentials',h:`<span class="kw">Microsoft Entra ID</span> = the cloud identity provider: users, groups, <b>devices</b>, apps. <span class="kw">Hybrid identity</span> syncs on-prem AD with Entra (Entra Connect). Authentication: <span class="kw">MFA</span>, <span class="kw">passwordless</span> (Hello, FIDO2, Authenticator), <span class="kw">password protection</span> (bans weak/custom-banned passwords).`},
+ {qq:'Syncing on-premises Active Directory users to Entra ID is called:',o:['Federation only','Hybrid identity (Entra Connect)','A resource lock','Peering'],a:1,e:'Hybrid identity syncs/links on-prem AD with Entra ID so one identity works everywhere.'},
+ {c:C,t:'🚦 Conditional Access & PIM',h:`<span class="kw">Conditional Access</span> = if/then policies at sign-in using signals (user, location, device health, risk) → require MFA, block, or allow. <span class="kw">PIM</span> (Privileged Identity Management) makes admin roles <b>just-in-time</b>: activate the role for hours, with approval and audit, instead of holding it forever. <span class="kw">Access reviews</span> periodically confirm who still needs access.`},
+ {qq:'Admins should hold Global Admin ONLY when actively needed, with approval. Use:',o:['Permanent assignment','Privileged Identity Management (PIM)','A shared account','An NSG'],a:1,e:'PIM provides just-in-time, time-boxed, auditable role activation.'},
+ {c:C,t:'🕵️ Identity Protection',h:`<span class="kw">Entra ID Protection</span> detects risky sign-ins (impossible travel, leaked credentials, anonymized IPs) and can auto-respond: require MFA, force password reset, or block. Feed its <b>risk signal</b> into Conditional Access for automated defense.`},
+ {qq:'A sign-in from two continents 5 minutes apart is flagged by:',o:['Cost Management','Entra ID Protection (risk detection)','Azure DNS','AzCopy'],a:1,e:'Identity Protection detects risk events like impossible travel and can trigger protections.'},
+],
+27:[
+ {c:C,t:'🧱 Azure infrastructure security',h:`<span class="kw">NSGs</span> filter subnet/NIC traffic. <span class="kw">Azure Firewall</span> = managed, stateful, org-wide rules. <span class="kw">DDoS Protection</span> absorbs volumetric attacks. <span class="kw">Azure Key Vault</span> stores secrets, keys, and certificates so they never live in code.<div class="callout exam"><span class="c-tag">🎯 EXAM TIP</span>"Where do connection strings/certificates belong?" → Key Vault. Every time.</div>`},
+ {qq:'Application secrets and certificates belong in:',o:['Source code','Azure Key Vault','A sticky note','Blob public container'],a:1,e:'Key Vault centralizes secrets/keys/certs with access control and auditing.'},
+ {c:C,t:'🛡️ Defender for Cloud & Sentinel',h:`<span class="kw">Defender for Cloud</span> = cloud security posture (secure score, recommendations) + workload protection plans. <span class="kw">Microsoft Sentinel</span> = cloud-native <b>SIEM</b> (collect & analyze security logs at scale) + <b>SOAR</b> (automated playbook responses).<div class="callout analogy"><span class="c-tag">🧠 REMEMBER</span>Defender for Cloud = "how healthy is my posture?" Sentinel = "the security operations command center".</div>`},
+ {qq:'Collecting security logs org-wide, hunting threats, and auto-responding with playbooks is:',o:['Microsoft Sentinel (SIEM + SOAR)','The Pricing Calculator','Azure Advisor','Intune'],a:0,e:'Sentinel is Microsoft\'s cloud-native SIEM/SOAR.'},
+ {c:C,t:'🧿 Defender XDR & Intune',h:`<span class="kw">Microsoft Defender XDR</span> = the extended detection family: <b>for Office 365</b> (email/phishing), <b>for Endpoint</b> (devices/EDR), <b>for Identity</b> (on-prem AD attacks), <b>for Cloud Apps</b> (SaaS usage/CASB). <span class="kw">Microsoft Intune</span> manages and secures endpoints: enrollment, compliance policies, app management.`},
+ {qq:'Phishing and malicious email protection comes from:',o:['Defender for Office 365','Defender for Cloud Apps','Intune','Key Vault'],a:0,e:'Defender for Office 365 protects email and collaboration from phishing/malware.'},
+],
+28:[
+ {c:C,t:'📜 Purview compliance portal',h:`<span class="kw">Microsoft Purview</span> is the compliance home: <span class="kw">Compliance Manager</span> scores you against regulations (GDPR, ISO) with improvement actions. The <span class="kw">Service Trust Portal</span> publishes Microsoft's own audits & certifications. Microsoft's privacy principles: control, transparency, security, legal protection, no content-based targeting, benefit to you.`},
+ {qq:'Track your organization\'s progress against GDPR with a score and actions using:',o:['Compliance Manager','A pie chart','Azure DNS','VM Insights'],a:0,e:'Compliance Manager provides compliance scoring and improvement actions per regulation.'},
+ {c:C,t:'🏷️ Information protection & DLP',h:`<span class="kw">Sensitivity labels</span> classify & protect content (encrypt, watermark) — they travel WITH the file. <span class="kw">Data loss prevention (DLP)</span> stops sensitive info (credit cards, IDs) leaving via email/chat/files. <span class="kw">Retention policies</span> keep or delete content on schedule. Together: know your data, protect it, govern its lifecycle.`},
+ {qq:'Blocking employees from emailing credit card numbers outside the org is:',o:['A sensitivity label','Data loss prevention (DLP)','A retention policy','eDiscovery'],a:1,e:'DLP policies detect and block sensitive info exfiltration.'},
+ {c:C,t:'⚖️ Risk, discovery & audit',h:`<span class="kw">Insider risk management</span> spots risky internal behavior (mass downloads before resignation). <span class="kw">eDiscovery</span> finds and holds content for legal cases. <span class="kw">Audit</span> logs who did what across Microsoft 365. Azure resource governance recap: <span class="kw">Azure Policy</span>, <span class="kw">locks</span>, and <span class="kw">blueprints</span> keep deployments compliant.`},
+ {qq:'Finding and legally holding all emails about a lawsuit uses:',o:['eDiscovery','DLP','Defender for Endpoint','Autoscale'],a:0,e:'eDiscovery searches, holds, and exports content for legal/investigation needs.'},
+],
+29:[
+ {c:C,t:'📝 SC-900 exam facts',h:`Passing score: <b>700/1000</b>. ~40–50 questions, ~45–65 min. It's a breadth exam: lots of "which product does X?" — the Defender family table and Entra features are where most marks live. Security concepts (Zero Trust) start every section.`},
+ {qq:'Most SC-900 questions ask you to:',o:['Write PowerShell','Match a capability to the right Microsoft product','Draw diagrams','Configure firewalls live'],a:1,e:'It\'s a fundamentals breadth exam — product-to-purpose matching wins it.'},
+ {c:C,t:'🏁 Finishing the fundamentals set',h:`Take the free official SC-900 practice assessment; book at <b>85%+</b>. With AZ-900 + DP-900 + AI-900 + SC-900 you hold the full Microsoft fundamentals family — a serious CV block — and AZ-104/PL-300 make you role-ready. 🎉`},
+ {qq:'The golden booking rule for SC-900 is:',o:['Book day one','85%+ consistent official practice scores first','Wait a year','Skip practice'],a:1,e:'Same rule across all six certs: consistent 85%+ → book with confidence.'},
+],
 };
 
 const BADGES=[
@@ -1694,6 +2039,10 @@ const BADGES=[
   {id:'mockpl300',ico:'📈',name:'PL-300 Ready',desc:'Pass a PL-300 mock exam',check:s=>s.examPass&&s.examPass.pl300},
   {id:'dp900done',ico:'📊',name:'Data Fundamentals!',desc:'Finish all DP-900 modules',check:s=>certPct(s,'dp900')>=100},
   {id:'pl300done',ico:'📈',name:'Power BI Analyst',desc:'Finish all PL-300 modules',check:s=>certPct(s,'pl300')>=100},
+  {id:'mockai900',ico:'🤖',name:'AI-900 Ready',desc:'Pass an AI-900 mock exam',check:s=>s.examPass&&s.examPass.ai900},
+  {id:'mocksc900',ico:'🛡️',name:'SC-900 Ready',desc:'Pass an SC-900 mock exam',check:s=>s.examPass&&s.examPass.sc900},
+  {id:'ai900done',ico:'🤖',name:'AI Fundamentals!',desc:'Finish all AI-900 modules',check:s=>certPct(s,'ai900')>=100},
+  {id:'sc900done',ico:'🛡️',name:'Security Fundamentals!',desc:'Finish all SC-900 modules',check:s=>certPct(s,'sc900')>=100},
   {id:'complete',ico:'🏆',name:'Certified Journey',desc:'Complete AZ-900 + AZ-104',check:s=>certPct(s,'az900')>=100&&certPct(s,'az104')>=100},
   {id:'grandslam',ico:'💠',name:'Grand Slam',desc:'Complete ALL FOUR cert curricula',check:s=>CERT_ORDER.every(c=>certPct(s,c)>=100)},
   {id:'decksession',ico:'🎴',name:'Card Shark',desc:'Finish a flashcard study session',check:s=>(s.decksDone||0)>=1},
@@ -1705,6 +2054,8 @@ const ROADMAP=[
   {m:'Month 3 · September',c:'az104',title:'AZ-104 Part 2 → PASS + apply',pts:['W10 Virtual networking','W11 Monitor & backup','W12 Practice exam → PASS AZ-104','Polish CV/LinkedIn · portfolio 3–4 · start applying']},
   {m:'Month 4 · October (data track)',c:'dp900',title:'DP-900 in 3–4 weeks',pts:['W1 Core data concepts + relational (SQL lab)','W2 Non-relational (Cosmos lab)','W3 Analytics workloads','W3–4 Practice exam → PASS DP-900']},
   {m:'Months 4–6 (analyst track)',c:'pl300',title:'PL-300 → job-ready data analyst',pts:['W1–2 Prepare data (Power Query lab)','W3–4 Model data + DAX (star schema lab)','W5–6 Visualize & analyze (report lab)','W7 Manage & secure (publish + RLS lab)','W8 Practice exam → PASS PL-300 📈']},
+  {m:'Bonus sprint (2–3 weeks)',c:'ai900',title:'AI-900 — the fast, fun one',pts:['W1 AI workloads + responsible AI + ML fundamentals','W2 Vision, NLP & generative AI (+studio lab)','W2–3 Practice exam → PASS AI-900 🤖']},
+  {m:'Bonus sprint (2–3 weeks)',c:'sc900',title:'SC-900 — complete the fundamentals set',pts:['W1 Zero Trust + Entra ID','W2 Defender family, Sentinel & Purview (+portal tour lab)','W2–3 Practice exam → PASS SC-900 🛡️']},
 ];
 
 const RESOURCES=[
@@ -1722,6 +2073,160 @@ const RESOURCES=[
   {i:'📝',t:'PL-300 Free Practice Assessment',s:'Official practice questions for Power BI Data Analyst.',u:'https://learn.microsoft.com/credentials/certifications/exams/pl-300/practice/assessment'},
   {i:'⬇️',t:'Power BI Desktop (free download)',s:'The tool PL-300 is tested on — install it and do the labs.',u:'https://www.microsoft.com/download/details.aspx?id=58494'},
   {i:'🎓',t:'PL-300 Learning Path (free)',s:'Official self-paced Power BI Data Analyst training.',u:'https://learn.microsoft.com/training/courses/pl-300t00'},
+  {i:'🤖',t:'AI-900 Study Guide (official)',s:'Exact skills measured for Azure AI Fundamentals.',u:'https://learn.microsoft.com/credentials/certifications/resources/study-guides/ai-900'},
+  {i:'📝',t:'AI-900 Free Practice Assessment',s:'Official practice questions for AI Fundamentals.',u:'https://learn.microsoft.com/credentials/certifications/exams/ai-900/practice/assessment'},
+  {i:'🛡️',t:'SC-900 Study Guide (official)',s:'Exact skills measured for Security, Compliance & Identity.',u:'https://learn.microsoft.com/credentials/certifications/resources/study-guides/sc-900'},
+  {i:'📝',t:'SC-900 Free Practice Assessment',s:'Official practice questions for SC-900.',u:'https://learn.microsoft.com/credentials/certifications/exams/sc-900/practice/assessment'},
+];
+
+/* ---------- SCENARIO PRACTICE (case-study style, shared context) ---------- */
+const SCENARIOS=[
+  {cert:'az104',title:'Contoso moves to Azure',context:'Contoso has 3 on-prem apps moving to Azure. Requirements: admins must not hold permanent Owner rights on production; the storage account must be unreachable from the internet; VM access must not expose public RDP; a regional outage must not lose the customer database.',questions:[
+    {cert:'az104',topic:'Identity & Governance',q:'Admins need production access only when actively working, with approval. Best fit:',o:['Permanent Owner for all admins','Just-in-time elevation (PIM-style) with narrower roles','One shared admin account','Give everyone Contributor'],a:1,e:'Standing broad access violates least privilege — time-boxed, approved elevation is the pattern.'},
+    {cert:'az104',topic:'Storage',q:'Make the storage account unreachable from the internet:',o:['A stronger access key','Private endpoint + disable public network access','A CanNotDelete lock','Cool tier'],a:1,e:'A private endpoint puts the account inside the VNet; disabling public access closes the internet path.'},
+    {cert:'az104',topic:'Networking',q:'Admins need RDP to VMs without public IPs:',o:['Public IP with a strong password','Azure Bastion','Port 3389 open to Internet','A DNS zone'],a:1,e:'Bastion brokers RDP/SSH through the portal over TLS — no public IP on the VM.'},
+    {cert:'az104',topic:'Monitor & Backup',q:'Protect the database VM against a REGIONAL outage:',o:['Daily backup in the same region only','Azure Site Recovery replication to a secondary region','A resource lock','Larger disks'],a:1,e:'Backups in-region don\'t survive a regional disaster — ASR replicates and fails over across regions.'},
+  ]},
+  {cert:'az104',title:'The web app that keeps falling over',context:'A retail web app on a single VM crashes during sales events. Marketing wants zero-downtime deployments, autoscaling for spikes, and traffic split by URL path (/api to a separate backend). Budget is tight.',questions:[
+    {cert:'az104',topic:'Compute',q:'The most cost-effective fix for spiky traffic on identical instances:',o:['One giant VM','A VM Scale Set (or App Service with autoscale)','Two manual VMs','A resource lock'],a:1,e:'Autoscaling matches capacity to demand — pay for spike capacity only during spikes.'},
+    {cert:'az104',topic:'Compute',q:'Zero-downtime deployments on App Service use:',o:['FTP at midnight','Deployment slots with swap','Deleting and recreating the app','A bigger plan only'],a:1,e:'Deploy to staging slot, warm it, swap — instant and reversible.'},
+    {cert:'az104',topic:'Networking',q:'Routing /api/* to a different backend pool requires:',o:['Azure Load Balancer (L4)','Application Gateway (L7 path-based routing)','VNet peering','A UDR'],a:1,e:'Path-based routing is Layer 7 — Application Gateway territory.'},
+    {cert:'az104',topic:'Monitor & Backup',q:'Get notified BEFORE crashes: alert when CPU stays above 85% for 10 minutes:',o:['Check the portal hourly','A metric alert rule with an action group','A resource lock','Cool tier storage'],a:1,e:'Metric alert + action group = automatic notification (and optional auto-remediation).'},
+  ]},
+  {cert:'pl300',title:'The slow sales report',context:'A sales report imports one 400-column flat table refreshed hourly. Visuals take 30+ seconds. Finance needs YoY comparisons that are currently wrong, and only each region\'s manager may see their own rows.',questions:[
+    {cert:'pl300',topic:'Model Data (DAX)',q:'The single most impactful modeling fix:',o:['More visuals','Restructure into a star schema and drop unused columns','A new color theme','Print to PDF'],a:1,e:'Flat wide tables kill performance — star schema + column pruning is the cure.'},
+    {cert:'pl300',topic:'Model Data (DAX)',q:'Correct YoY comparisons require:',o:['A marked date table + time intelligence (SAMEPERIODLASTYEAR)','More slicers','DirectQuery','A gauge'],a:0,e:'Time intelligence needs a continuous, marked date table to shift periods correctly.'},
+    {cert:'pl300',topic:'Manage & Secure',q:'"Each manager sees only their region" is implemented with:',o:['Separate reports per region','RLS roles with a DAX filter','Hiding pages','A theme'],a:1,e:'Row-level security filters rows per user; one report serves everyone.'},
+    {cert:'pl300',topic:'Prepare Data',q:'Hourly refresh is heavy. The right fix for the 100M-row fact:',o:['Refresh nightly only','Incremental refresh with RangeStart/RangeEnd','Export to Excel','Delete history'],a:1,e:'Incremental refresh reloads only recent partitions — fast refresh, full history kept.'},
+  ]},
+  {cert:'pl300',title:'Publishing to 500 viewers',context:'Your workspace has 6 reports for the sales org (500 people). Leadership wants a curated experience, guaranteed-fresh data each morning from an on-prem SQL Server, and confidence that only intended people see anything.',questions:[
+    {cert:'pl300',topic:'Manage & Secure',q:'Distribute a curated, navigable package to 500 viewers:',o:['Share 6 links in email','Publish an app from the workspace','Add all 500 as workspace Members','Print PDFs'],a:1,e:'Apps give audiences a curated, managed experience; Member access would let them edit!'},
+    {cert:'pl300',topic:'Manage & Secure',q:'Morning-fresh data from ON-PREM SQL Server requires:',o:['Nothing special','A standard on-premises data gateway + scheduled refresh','DirectQuery to the cloud','USB transfers'],a:1,e:'On-prem sources refresh through the gateway; schedule it before working hours.'},
+    {cert:'pl300',topic:'Manage & Secure',q:'A refresh failed overnight. First place to look:',o:['Rebuild the model','Semantic model refresh history & gateway status','Buy Premium','Delete the app'],a:1,e:'Refresh history shows the error; gateway health is the usual suspect for on-prem sources.'},
+    {cert:'pl300',topic:'Manage & Secure',q:'The 500 viewers must NOT see each other\'s regional data. Combine:',o:['Trust','App audience permissions + RLS roles','Hidden pages only','Smaller fonts'],a:1,e:'App permissions control WHO opens content; RLS controls WHICH ROWS they see. You need both.'},
+  ]},
+  {cert:'az104',title:'Storage lockdown audit',context:'An auditor reviews your storage: account keys are shared in a team chat, a public container exposed backups, deleted blobs are unrecoverable, and old data sits on the expensive Hot tier forever.',questions:[
+    {cert:'az104',topic:'Storage',q:'Replace shared account keys for developer access with:',o:['A longer key','Entra ID auth + RBAC (or time-boxed SAS via stored access policy)','The same key rotated yearly','Public access'],a:1,e:'Identity-based access (or revocable, scoped SAS) removes the shared-secret problem.'},
+    {cert:'az104',topic:'Storage',q:'Prevent accidental public exposure account-wide:',o:['Hope','Disable public blob access at the account level','A bigger container','GRS'],a:1,e:'The account-level setting blocks anonymous access regardless of container settings.'},
+    {cert:'az104',topic:'Storage',q:'Make deleted blobs recoverable for 14 days:',o:['Soft delete with 14-day retention','Archive tier','A lock','Peering'],a:0,e:'Soft delete retains deleted blobs for the configured window.'},
+    {cert:'az104',topic:'Storage',q:'Automatically demote data untouched for 60 days to a cheaper tier:',o:['Manual moves monthly','A lifecycle management rule','Delete it all','ZRS'],a:1,e:'Lifecycle rules transition blobs by last-access/modified age — set and forget.'},
+  ]},
+  {cert:'pl300',title:'The messy import',context:'Finance sends a monthly Excel export: header junk in the top 3 rows, merged category cells (blanks below), month columns Jan–Dec across the sheet, and numbers stored as text.',questions:[
+    {cert:'pl300',topic:'Prepare Data',q:'First fix for the 3 junk rows above the real headers:',o:['Remove Top Rows, then Use First Row as Headers','Delete the file','Transpose','A slicer'],a:0,e:'Strip the junk, then promote the real header row.'},
+    {cert:'pl300',topic:'Prepare Data',q:'The merged category cells (value then blanks) need:',o:['Fill Down','Remove Duplicates','Group By','A measure'],a:0,e:'Fill Down propagates each category into the blanks beneath it.'},
+    {cert:'pl300',topic:'Prepare Data',q:'Jan–Dec as separate COLUMNS should become rows via:',o:['Pivot','Unpivot columns','Split column','Append'],a:1,e:'Unpivot turns the twelve month columns into Month/Value rows — model-ready.'},
+    {cert:'pl300',topic:'Prepare Data',q:'Numbers stored as text will break aggregation unless you:',o:['Ignore it','Set the column data type to a numeric type','Add more visuals','Use DirectQuery'],a:1,e:'Correct data types are step one — text columns can\'t SUM.'},
+  ]},
+];
+
+/* ---------- CHEAT SHEETS (last-mile revision tables) ---------- */
+const CHEATS=[
+  {cert:'az900',title:'Cloud models & service types',html:`<table class="ltable"><tr><th>Ask</th><th>Answer</th></tr>
+    <tr><td>You manage OS &amp; up</td><td>IaaS (VMs)</td></tr>
+    <tr><td>You manage app &amp; data only</td><td>PaaS (App Service)</td></tr>
+    <tr><td>You manage almost nothing</td><td>SaaS (Microsoft 365)</td></tr>
+    <tr><td>Pay only while code runs</td><td>Serverless (Functions)</td></tr>
+    <tr><td>Number = regression · Category = classification</td><td>(bonus for AI-900)</td></tr>
+    <tr><td>Steady 3-yr workload</td><td>Reserved instances</td></tr>
+    <tr><td>Interruptible batch</td><td>Spot pricing</td></tr></table>`},
+  {cert:'az900',title:'Storage redundancy ladder',html:`<table class="ltable"><tr><th>Option</th><th>Copies</th><th>Survives</th></tr>
+    <tr><td>LRS</td><td>3 · one datacenter</td><td>Disk/rack failure</td></tr>
+    <tr><td>ZRS</td><td>3 · across zones</td><td>Datacenter failure</td></tr>
+    <tr><td>GRS</td><td>6 · + paired region</td><td>Regional outage</td></tr>
+    <tr><td>GZRS</td><td>6 · zones + region</td><td>Everything above</td></tr></table>
+    Tiers: <code>Hot</code> → <code>Cool (30d)</code> → <code>Cold (90d)</code> → <code>Archive (180d, hours to read)</code>`},
+  {cert:'az900',title:'Who does what (tools)',html:`<table class="ltable"><tr><th>Need</th><th>Tool</th></tr>
+    <tr><td>Estimate cost BEFORE deploying</td><td>Pricing Calculator</td></tr>
+    <tr><td>Optimize cost/security/reliability</td><td>Azure Advisor</td></tr>
+    <tr><td>Is AZURE having an outage?</td><td>Service Health</td></tr>
+    <tr><td>How are MY resources doing?</td><td>Azure Monitor</td></tr>
+    <tr><td>WHO can act</td><td>RBAC</td></tr>
+    <tr><td>WHAT may exist</td><td>Azure Policy</td></tr>
+    <tr><td>Stop accidental delete</td><td>Resource lock</td></tr>
+    <tr><td>Manage on-prem/other clouds</td><td>Azure Arc</td></tr></table>`},
+  {cert:'az104',title:'RBAC roles & locks',html:`<table class="ltable"><tr><th>Role</th><th>Can</th></tr>
+    <tr><td>Reader</td><td>View only</td></tr>
+    <tr><td>Contributor</td><td>Manage everything EXCEPT grant access</td></tr>
+    <tr><td>Owner</td><td>Manage + assign roles</td></tr>
+    <tr><td>User Access Administrator</td><td>Grant access only</td></tr></table>
+    Locks: <code>ReadOnly</code> = view only · <code>CanNotDelete</code> = edit yes, delete no · access is <b>additive</b>, scope inherits downward`},
+  {cert:'az104',title:'Networking quick table',html:`<table class="ltable"><tr><th>Need</th><th>Answer</th></tr>
+    <tr><td>Connect two VNets privately</td><td>VNet peering</td></tr>
+    <tr><td>RDP/SSH with no public IP</td><td>Azure Bastion</td></tr>
+    <tr><td>PaaS gets a private IP in your VNet</td><td>Private endpoint</td></tr>
+    <tr><td>Steer traffic through a firewall</td><td>UDR · next hop = virtual appliance</td></tr>
+    <tr><td>TCP/UDP balancing (L4)</td><td>Load Balancer</td></tr>
+    <tr><td>URL-path routing + WAF (L7)</td><td>Application Gateway</td></tr>
+    <tr><td>NSG rule conflict</td><td>Lowest priority number wins</td></tr>
+    <tr><td>Diagnose connectivity</td><td>Network Watcher</td></tr></table>`},
+  {cert:'az104',title:'Backup vs Site Recovery',html:`<table class="ltable"><tr><th></th><th>Azure Backup</th><th>Site Recovery</th></tr>
+    <tr><td>Purpose</td><td>Point-in-time restore ("oops")</td><td>Keep RUNNING elsewhere (disaster)</td></tr>
+    <tr><td>Lives in</td><td>Recovery Services vault</td><td>Recovery Services vault</td></tr>
+    <tr><td>Test safely</td><td>Restore to new VM</td><td>Test failover (isolated)</td></tr></table>
+    Alerts = signal + condition + <b>action group</b> · suppress on schedule with alert processing rules · logs queried with <code>KQL</code>`},
+  {cert:'dp900',title:'Workload & store chooser',html:`<table class="ltable"><tr><th>Clue in question</th><th>Answer</th></tr>
+    <tr><td>Many small ACID writes</td><td>OLTP · relational</td></tr>
+    <tr><td>Aggregate history for insight</td><td>OLAP · warehouse</td></tr>
+    <tr><td>Flexible JSON, global, ms-latency</td><td>Cosmos DB</td></tr>
+    <tr><td>People connected to people</td><td>Graph (Gremlin)</td></tr>
+    <tr><td>Massive write firehose</td><td>Column-family (Cassandra)</td></tr>
+    <tr><td>Cheap key/attribute lookups</td><td>Table storage</td></tr>
+    <tr><td>Images, video, backups</td><td>Blob storage</td></tr>
+    <tr><td>Raw files before modeling</td><td>Data lake (ADLS Gen2)</td></tr></table>`},
+  {cert:'dp900',title:'SQL & pipeline vocabulary',html:`<table class="ltable"><tr><th>Term</th><th>Meaning</th></tr>
+    <tr><td>DDL / DML</td><td>Define structure / work with data</td></tr>
+    <tr><td>WHERE / GROUP BY</td><td>Filter rows / aggregate groups</td></tr>
+    <tr><td>View / Stored procedure</td><td>Saved query / saved logic</td></tr>
+    <tr><td>ETL vs ELT</td><td>Transform before load vs after (modern)</td></tr>
+    <tr><td>Batch vs streaming</td><td>Scheduled chunks vs per-event</td></tr>
+    <tr><td>Synapse / Databricks / Fabric</td><td>SQL warehouse hub / Spark-first / all-in-one SaaS</td></tr></table>`},
+  {cert:'pl300',title:'DAX patterns to memorize',html:`<table class="ltable"><tr><th>Goal</th><th>Pattern</th></tr>
+    <tr><td>Total</td><td><code>SUM(Sales[Amount])</code></td></tr>
+    <tr><td>Row math then sum</td><td><code>SUMX(Sales, [Qty]*[Price])</code></td></tr>
+    <tr><td>Unique customers</td><td><code>DISTINCTCOUNT(Sales[CustID])</code></td></tr>
+    <tr><td>Filtered total</td><td><code>CALCULATE([Sales], Region="West")</code></td></tr>
+    <tr><td>% of total</td><td><code>DIVIDE([Sales], CALCULATE([Sales], ALL(Product)))</code></td></tr>
+    <tr><td>Year to date</td><td><code>TOTALYTD([Sales], 'Date'[Date])</code></td></tr>
+    <tr><td>vs last year</td><td><code>CALCULATE([Sales], SAMEPERIODLASTYEAR('Date'[Date]))</code></td></tr>
+    <tr><td>Second date column</td><td><code>CALCULATE([x], USERELATIONSHIP(...))</code></td></tr></table>
+    Aggregation → <b>measure</b> · slicer/axis field → <b>column</b> · time intelligence needs a <b>marked date table</b>`},
+  {cert:'pl300',title:'Service & security table',html:`<table class="ltable"><tr><th>Need</th><th>Answer</th></tr>
+    <tr><td>Real-time data</td><td>DirectQuery</td></tr><tr><td>Fastest + full DAX</td><td>Import</td></tr>
+    <tr><td>Dimension used by both</td><td>Dual</td></tr>
+    <tr><td>On-prem refresh</td><td>Standard gateway</td></tr>
+    <tr><td>Huge model refresh</td><td>Incremental refresh</td></tr>
+    <tr><td>Rows per user</td><td>RLS (viewers only — editors bypass!)</td></tr>
+    <tr><td>500 viewers</td><td>Publish an app</td></tr>
+    <tr><td>Read-only role</td><td>Viewer</td></tr>
+    <tr><td>Slow report diagnosis</td><td>Performance Analyzer</td></tr>
+    <tr><td>Pixel-perfect print</td><td>Paginated report</td></tr></table>`},
+  {cert:'ai900',title:'Workload & principle matcher',html:`<table class="ltable"><tr><th>Scenario clue</th><th>Answer</th></tr>
+    <tr><td>Predict a number</td><td>Regression</td></tr><tr><td>Predict a category</td><td>Classification</td></tr>
+    <tr><td>Group unlabeled data</td><td>Clustering</td></tr>
+    <tr><td>Label whole image</td><td>Image classification</td></tr>
+    <tr><td>Find &amp; box objects</td><td>Object detection</td></tr>
+    <tr><td>Read text in images</td><td>OCR</td></tr>
+    <tr><td>Extract invoice fields</td><td>Document Intelligence</td></tr>
+    <tr><td>Positive/negative reviews</td><td>Sentiment analysis</td></tr>
+    <tr><td>Create new content</td><td>Generative AI</td></tr>
+    <tr><td>Answer from YOUR docs</td><td>Grounding / RAG</td></tr></table>
+    Principles: <b>F</b>air · <b>R</b>eliable&amp;safe · <b>P</b>rivate · <b>I</b>nclusive · <b>T</b>ransparent · <b>A</b>ccountable`},
+  {cert:'sc900',title:'Product-to-purpose (where the marks are)',html:`<table class="ltable"><tr><th>Capability</th><th>Product</th></tr>
+    <tr><td>Cloud identity provider</td><td>Microsoft Entra ID</td></tr>
+    <tr><td>If/then sign-in rules</td><td>Conditional Access</td></tr>
+    <tr><td>Just-in-time admin roles</td><td>PIM</td></tr>
+    <tr><td>Risky sign-in detection</td><td>Entra ID Protection</td></tr>
+    <tr><td>Secrets/keys/certs</td><td>Key Vault</td></tr>
+    <tr><td>Posture + secure score</td><td>Defender for Cloud</td></tr>
+    <tr><td>SIEM + SOAR</td><td>Microsoft Sentinel</td></tr>
+    <tr><td>Email/phishing</td><td>Defender for Office 365</td></tr>
+    <tr><td>Devices/EDR</td><td>Defender for Endpoint</td></tr>
+    <tr><td>Device management</td><td>Intune</td></tr>
+    <tr><td>Compliance scoring</td><td>Compliance Manager</td></tr>
+    <tr><td>Stop data leaving</td><td>DLP</td></tr>
+    <tr><td>Classify + protect files</td><td>Sensitivity labels</td></tr>
+    <tr><td>Legal hold/search</td><td>eDiscovery</td></tr></table>
+    Zero Trust: <b>verify explicitly · least privilege · assume breach</b>`},
 ];
 
 /* ---------- STATE ---------- */
@@ -1730,9 +2235,10 @@ function fresh(){return{xp:0,streak:0,lastDay:null,daily:{},done:{},badges:{},ti
 function load(){try{return Object.assign(fresh(),JSON.parse(localStorage.getItem(SKEY))||{});}catch(e){return fresh();}}
 function save(){try{localStorage.setItem(SKEY,JSON.stringify(S));}catch(e){/* storage blocked (private mode / sandbox) — app still works, progress just won't persist */}}
 let S=load();
-/* migrate saves from the AZ-only version */
-S.tracks=Object.assign({az900:true,az104:true,dp900:true,pl300:true},S.tracks||{});
+/* migrate saves from earlier versions */
+S.tracks=Object.assign({az900:true,az104:true,dp900:true,pl300:true,ai900:true,sc900:true},S.tracks||{});
 S.study=S.study||{day:null,sec:0};
+S.rev=S.rev||{};
 if(S.sound===undefined)S.sound=true;
 
 function todayStr(){return new Date().toISOString().slice(0,10);}
@@ -1783,13 +2289,32 @@ function appConfirm(msg,onYes){
   document.getElementById('cb-no').onclick=()=>bar.classList.remove('show');
 }
 
-/* record a quiz answer per topic → powers the weak-topics tracker */
-function recordAnswer(topic,correct){
-  if(!topic) return;
-  S.tstats=S.tstats||{};
-  const s=S.tstats[topic]||(S.tstats[topic]={seen:0,wrong:0});
-  s.seen++; if(!correct) s.wrong++;
+/* record a quiz answer per topic → powers the weak-topics tracker + spaced repetition */
+function recordAnswer(topic,correct,q){
+  if(topic){
+    S.tstats=S.tstats||{};
+    const s=S.tstats[topic]||(S.tstats[topic]={seen:0,wrong:0});
+    s.seen++; if(!correct) s.wrong++;
+  }
+  if(q) updateRev(q,correct);
   save();
+}
+
+/* ---------- SMART REVIEW (Leitner spaced repetition on missed questions) ---------- */
+function qKey(q){ let h=5381; const s=q.q; for(let i=0;i<s.length;i++) h=((h<<5)+h+s.charCodeAt(i))|0; return (h>>>0).toString(36); }
+const REV_GAPS=[0,1,3,7]; // days until next appearance per box
+function updateRev(q,correct){
+  S.rev=S.rev||{};
+  const k=qKey(q), r=S.rev[k];
+  if(!correct){ S.rev[k]={box:1,due:dayNum()+1}; }
+  else if(r){ r.box++; if(r.box>=REV_GAPS.length){ delete S.rev[k]; } else { r.due=dayNum()+REV_GAPS[r.box]; } }
+}
+function reviewDue(){ S.rev=S.rev||{}; return QUESTIONS.filter(q=>{const r=S.rev[qKey(q)];return r&&r.due<=dayNum();}); }
+function renderReviewCard(){
+  const card=document.getElementById('review-card');if(!card)return;
+  const n=reviewDue().length;
+  card.style.display=n?'block':'none';
+  const c=document.getElementById('review-count'); if(c)c.textContent=n;
 }
 /* topics ranked by miss-rate (only those with a wrong answer) */
 function weakTopics(){
@@ -1828,7 +2353,7 @@ function render(){
       <div class="bar"><i style="width:${certPctGlobal(c)}%"></i></div></div>`).join('')
       ||'<div class="sub">Pick at least one track below 👇</div>';
   }
-  renderTracks(); renderReadiness();
+  renderTracks(); renderReadiness(); renderReviewCard();
   renderDaily(); renderBadgesMini(); renderCountdown(); renderContinue(); renderWeak();
 }
 
@@ -2009,7 +2534,9 @@ function renderCurriculum(){
 const MODULE_TOPIC={0:'Cloud Concepts',1:'Architecture & Services',2:'Management & Governance',
   4:'Identity & Governance',5:'Storage',6:'Compute',7:'Networking',8:'Monitor & Backup',
   10:'Core Data Concepts',11:'Relational Data',12:'Non-relational Data',13:'Analytics',
-  15:'Prepare Data',16:'Model Data (DAX)',17:'Visualize & Analyze',18:'Manage & Secure'};
+  15:'Prepare Data',16:'Model Data (DAX)',17:'Visualize & Analyze',18:'Manage & Secure',
+  20:'AI Workloads',21:'Machine Learning',22:'Vision & Language',23:'Generative AI',
+  25:'Security Concepts',26:'Entra ID',27:'Security Solutions',28:'Compliance'};
 
 /* ---------- VOICE (Web Speech API — offline, free) ---------- */
 const VOICE_OK = ('speechSynthesis' in window);
@@ -2243,6 +2770,7 @@ function renderQuizMenu(){
 function startQuiz(mode){
   let pool;
   if(mode==='daily'){ pool=shuffle(QUESTIONS.filter(q=>S.tracks[q.cert])).slice(0,5); } // random 5 from YOUR tracks; daily-goal credit on finish
+  else if(mode==='review'){ pool=shuffle(reviewDue()).slice(0,10); if(!pool.length){toast('🎉 Nothing due — your review queue is clear!');return;} }
   else if(CERTS[mode]){ pool=shuffle(QUESTIONS.filter(q=>q.cert===mode)).slice(0,10); }
   else if(mode.startsWith('topic:')){ const tp=mode.slice(6); pool=shuffle(QUESTIONS.filter(q=>q.topic===tp)); }
   else { pool=shuffle(QUESTIONS).slice(0,5); }
@@ -2258,6 +2786,8 @@ function showQ(){
   const qp=document.getElementById('q-progress');
   qp.className='pill '+(CERTS[q.cert]?q.cert:'az900');
   qp.textContent='Q '+(QZ.i+1)+' / '+QZ.pool.length;
+  const ctx=document.getElementById('q-context');
+  if(ctx){ ctx.classList.toggle('hidden',!QZ.ctx); if(QZ.ctx) ctx.innerHTML=QZ.ctx; }
   document.getElementById('q-score').textContent='Score: '+QZ.score;
   document.getElementById('q-bar-fill').style.width=(QZ.i/QZ.pool.length*100)+'%';
   document.getElementById('q-question').textContent=q.q;
@@ -2280,7 +2810,7 @@ function answer(idx,el){
   opts.forEach((o,k)=>{o.classList.add('disabled'); if(k===q.a)o.classList.add('correct');});
   if(idx===q.a){ QZ.score++; toast('✅ Correct! +5 XP'); sfx('good'); addXP(5); }
   else { el.classList.add('wrong'); sfx('bad'); }
-  recordAnswer(q.topic, idx===q.a);
+  recordAnswer(q.topic, idx===q.a, q);
   document.getElementById('q-score').textContent='Score: '+QZ.score;
   const ex=document.getElementById('q-explain');
   ex.innerHTML='<b>'+(idx===q.a?'Correct.':'Not quite.')+'</b> '+q.e;
@@ -2319,7 +2849,8 @@ function finishQuiz(){
   document.getElementById('qr-msg').textContent=good?'You\'re exam-ready on this material.':'Review the explanations and try again — repetition is how it sticks.';
   document.getElementById('qr-score').textContent=sc+' / '+total;
   document.getElementById('qr-xp').textContent='+'+(sc*5)+' XP earned'+(pct===100?' · 💯 Perfectionist!':'');
-  document.getElementById('qr-retry').onclick=()=>startQuiz(QZ.mode);
+  const mode=QZ.mode, si=QZ.si;
+  document.getElementById('qr-retry').onclick=()=>{ if(mode==='scenario')startScenario(si); else startQuiz(mode); };
   checkBadges();
 }
 
@@ -2333,12 +2864,13 @@ function backToQuizMenu(){
 }
 
 /* ---------- MOCK EXAM ENGINE ---------- */
-const EXAM_CFG={ az900:{n:30,min:40,name:'AZ-900'}, az104:{n:35,min:60,name:'AZ-104'}, dp900:{n:30,min:42,name:'DP-900'}, pl300:{n:32,min:58,name:'PL-300'} };
+const EXAM_CFG={ az900:{n:30,min:40,name:'AZ-900'}, az104:{n:35,min:60,name:'AZ-104'}, dp900:{n:30,min:42,name:'DP-900'}, pl300:{n:32,min:58,name:'PL-300'}, ai900:{n:24,min:35,name:'AI-900'}, sc900:{n:24,min:35,name:'SC-900'} };
 let EX=null; // {cert,pool,answers,i,endTime,timer}
 function startExam(cert){
   const cfg=EXAM_CFG[cert];
   const pool=shuffle(QUESTIONS.filter(q=>q.cert===cert)).slice(0,cfg.n);
-  EX={cert,pool,answers:new Array(pool.length).fill(null),i:0,endTime:Date.now()+cfg.min*60000};
+  EX={cert,pool,answers:new Array(pool.length).fill(null),i:0,endTime:Date.now()+cfg.min*60000,flags:{},strikes:{}};
+  document.getElementById('exam-review').classList.add('hidden');
   document.getElementById('exam-menu').classList.add('hidden');
   document.getElementById('exam-result').classList.add('hidden');
   document.getElementById('exam-run').classList.remove('hidden');
@@ -2364,13 +2896,18 @@ function showExamQ(){
   document.getElementById('ex-question').textContent=q.q;
   const keys=['A','B','C','D'];
   const box=document.getElementById('ex-options');box.innerHTML='';
+  const struck=EX.strikes[EX.i]||{};
   q.o.forEach((opt,idx)=>{
     const chosen=EX.answers[EX.i]===idx;
-    const el=document.createElement('div');el.className='opt'+(chosen?' correct':'');
-    el.innerHTML=`<div class="key">${keys[idx]}</div><div>${opt}</div>`;
+    const el=document.createElement('div');el.className='opt'+(chosen?' correct':'')+(struck[idx]?' struck':'');
+    el.innerHTML=`<div class="key">${keys[idx]}</div><div>${opt}</div><button class="strike-btn" title="Strike out (eliminate)">✕</button>`;
     el.onclick=()=>{ EX.answers[EX.i]=idx; showExamQ(); updateExamMeta(); };
+    el.querySelector('.strike-btn').onclick=(e)=>{e.stopPropagation();EX.strikes[EX.i]=EX.strikes[EX.i]||{};EX.strikes[EX.i][idx]=!EX.strikes[EX.i][idx];showExamQ();};
     box.appendChild(el);
   });
+  const fb=document.getElementById('ex-flag');
+  fb.classList.toggle('on',!!EX.flags[EX.i]);
+  fb.textContent=EX.flags[EX.i]?'⚑ Flagged':'⚑ Flag';
   document.getElementById('ex-prev').style.visibility=EX.i>0?'visible':'hidden';
   document.getElementById('ex-next').textContent=(EX.i+1<EX.pool.length)?'Next →':'Last question';
   updateExamMeta();
@@ -2383,6 +2920,24 @@ function examNav(d){
   const n=EX.i+d;
   if(n>=0 && n<EX.pool.length){ EX.i=n; showExamQ(); }
 }
+function toggleFlag(){ if(!EX)return; EX.flags[EX.i]=!EX.flags[EX.i]; showExamQ(); }
+function showExamReview(){
+  if(!EX)return;
+  const grid=document.getElementById('rev-grid');grid.innerHTML='';
+  EX.pool.forEach((q,idx)=>{
+    const b=document.createElement('button');
+    b.className='rev-q'+(EX.answers[idx]!==null?' answered':'')+(EX.flags[idx]?' flagged':'');
+    b.textContent=idx+1;
+    b.onclick=()=>{ EX.i=idx; hideExamReview(); showExamQ(); };
+    grid.appendChild(b);
+  });
+  document.getElementById('exam-run').classList.add('hidden');
+  document.getElementById('exam-review').classList.remove('hidden');
+}
+function hideExamReview(){
+  document.getElementById('exam-review').classList.add('hidden');
+  document.getElementById('exam-run').classList.remove('hidden');
+}
 function submitExam(auto){
   if(!auto && !EX.confirmed){
     const unanswered=EX.answers.filter(a=>a===null).length;
@@ -2391,21 +2946,23 @@ function submitExam(auto){
     return;
   }
   if(EX.timer) clearInterval(EX.timer);
+  document.getElementById('exam-review').classList.add('hidden');
   // score
   let correct=0; const domains={};
   EX.pool.forEach((q,idx)=>{
     const ok=EX.answers[idx]===q.a;
     if(ok) correct++;
     const d=domains[q.topic]||(domains[q.topic]={c:0,t:0}); d.t++; if(ok)d.c++;
-    recordAnswer(q.topic, ok); // feed weak-topics tracker
+    recordAnswer(q.topic, ok, q); // feed weak-topics tracker + smart review
   });
   const total=EX.pool.length;
   const scaled=Math.round(correct/total*1000);
   const passed=scaled>=700;
   // XP: base + bonus for passing
   addXP(correct*3 + (passed?50:0));
-  // save history
+  // save history (+ remember for scorecard sharing)
   S.exams=S.exams||{}; S.examHist=S.examHist||[];
+  LASTEX={cert:EX.cert,scaled,correct,total,passed,when:todayStr()};
   S.examHist.unshift({cert:EX.cert,scaled,correct,total,passed,when:todayStr()});
   S.examHist=S.examHist.slice(0,10);
   if(passed){ S.examPass=S.examPass||{}; S.examPass[EX.cert]=true; confettiBurst(); sfx('win'); }
@@ -2435,9 +2992,29 @@ function backToExamMenu(){
   if(EX&&EX.timer) clearInterval(EX.timer);
   EX=null;
   document.getElementById('exam-run').classList.add('hidden');
+  document.getElementById('exam-review').classList.add('hidden');
   document.getElementById('exam-result').classList.add('hidden');
   document.getElementById('exam-menu').classList.remove('hidden');
-  renderExamHistory();
+  renderExamHistory(); renderScenarioList();
+}
+function renderScenarioList(){
+  const box=document.getElementById('scenario-list');if(!box)return;
+  box.innerHTML='';
+  SCENARIOS.forEach((sc,i)=>{
+    const el=document.createElement('div');el.className='quiz-card';
+    el.innerHTML=`<div class="qc-ico">${icoOf(sc.cert)}</div><div class="qc-name">${sc.title}</div><div class="qc-desc">${CERTS[sc.cert].name} · ${sc.questions.length} linked questions</div>`;
+    el.onclick=()=>startScenario(i);
+    box.appendChild(el);
+  });
+}
+function startScenario(i){
+  const sc=SCENARIOS[i];
+  go('quiz');
+  QZ={pool:sc.questions.slice(),i:0,score:0,answered:0,mode:'scenario',si:i,ctx:'<b>📋 '+sc.title+'</b> — '+sc.context};
+  document.getElementById('quiz-menu').classList.add('hidden');
+  document.getElementById('quiz-result').classList.add('hidden');
+  document.getElementById('quiz-run').classList.remove('hidden');
+  showQ();
 }
 function renderExamHistory(){
   const card=document.getElementById('exam-history-card'), box=document.getElementById('exam-history');
@@ -2459,7 +3036,7 @@ let cardGroup='';
 function cardGroupOf(e){ return e[2]||'az'; }
 function renderCardChips(){
   const box=document.getElementById('card-chips');if(!box)return;
-  const groups=[['','All'],['az','☁️ Azure (AZ-900/104)'],['dp900','📊 Data (DP-900)'],['pl300','📈 Power BI (PL-300)']];
+  const groups=[['','All'],['az','☁️ Azure (AZ-900/104)'],['dp900','📊 Data (DP-900)'],['pl300','📈 Power BI (PL-300)'],['ai900','🤖 AI (AI-900)'],['sc900','🛡️ Security (SC-900)']];
   box.innerHTML='';
   groups.forEach(([g,label])=>{
     const el=document.createElement('button');
@@ -2521,6 +3098,46 @@ function renderExamDay(){
     el.innerHTML=`<div class="ri">${ico}</div><div class="r-body"><b>${t}</b><small>${d}</small></div>`;
     box.appendChild(el);
   });
+}
+
+/* ---------- SHAREABLE SCORECARD (canvas PNG for WhatsApp) ---------- */
+let LASTEX=null;
+function shareScore(){
+  const r=LASTEX || (S.examHist&&S.examHist[0]);
+  if(!r){ toast('Take a mock exam first!'); return; }
+  const cv=document.createElement('canvas'); cv.width=1000; cv.height=560;
+  const cx=cv.getContext('2d');
+  // background
+  const bg=cx.createLinearGradient(0,0,1000,560);
+  bg.addColorStop(0,'#131a30'); bg.addColorStop(1,'#2a1a50');
+  cx.fillStyle=bg; cx.fillRect(0,0,1000,560);
+  cx.strokeStyle='#4f8cff'; cx.lineWidth=6; cx.strokeRect(12,12,976,536);
+  cx.textAlign='center'; cx.fillStyle='#eaf0ff';
+  cx.font='800 44px "Nunito","Segoe UI",sans-serif';
+  cx.fillText('☁️ AzureQuest — Mock Exam',500,86);
+  cx.font='700 30px "Nunito","Segoe UI",sans-serif'; cx.fillStyle='#93a0c4';
+  cx.fillText(EXAM_CFG[r.cert].name+' · '+CERTS[r.cert].full,500,138);
+  cx.font='900 130px "Nunito","Segoe UI",sans-serif';
+  cx.fillStyle=r.passed?'#58cc02':'#ffc800';
+  cx.fillText(r.scaled+' / 1000',500,300);
+  cx.font='800 46px "Nunito","Segoe UI",sans-serif';
+  cx.fillText(r.passed?'PASSED ✔':'IN TRAINING 💪',500,368);
+  cx.font='600 26px "Nunito","Segoe UI",sans-serif'; cx.fillStyle='#93a0c4';
+  cx.fillText(r.correct+'/'+r.total+' correct · pass mark 700 · '+r.when,500,424);
+  cx.fillStyle='#1cb0f6';
+  cx.fillText('Try it: daniyalabbas467-hash.github.io/azurequest',500,492);
+  cv.toBlob(blob=>{
+    if(!blob){ toast('Could not create image'); return; }
+    const file=new File([blob],'azurequest-score.png',{type:'image/png'});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){
+      navigator.share({files:[file],title:'My AzureQuest mock score'}).catch(()=>{});
+    } else {
+      const a=document.createElement('a');
+      a.href=URL.createObjectURL(blob); a.download='azurequest-score.png'; a.click();
+      URL.revokeObjectURL(a.href);
+      toast('🖼 Scorecard saved — attach it in WhatsApp!');
+    }
+  },'image/png');
 }
 
 /* ---------- FLASHCARD STUDY SESSION (know / again-later deck) ---------- */
@@ -2752,12 +3369,43 @@ function confettiBurst(){
   })();
 }
 
+/* ---------- CHEAT SHEETS ---------- */
+let cheatFilter='';
+function renderCheats(){
+  const chips=document.getElementById('cheat-chips');
+  if(chips){
+    const opts=[['','All']].concat(CERT_ORDER.map(c=>[c,icoOf(c)+' '+CERTS[c].name]));
+    chips.innerHTML='';
+    opts.forEach(([v,label])=>{
+      const b=document.createElement('button');
+      b.className='fchip'+(cheatFilter===v?' active':'');
+      b.textContent=label;
+      b.onclick=()=>{cheatFilter=v;renderCheats();};
+      chips.appendChild(b);
+    });
+  }
+  const box=document.getElementById('cheats');if(!box)return;
+  box.innerHTML='';
+  CHEATS.forEach(ch=>{
+    if(cheatFilter&&ch.cert!==cheatFilter)return;
+    const el=document.createElement('div');el.className='cheat-block';
+    el.innerHTML=`<h3>${icoOf(ch.cert)} ${ch.title} ${pillOf(ch.cert)}</h3>${ch.html}`;
+    box.appendChild(el);
+  });
+}
+
+/* ---------- PWA (installable app when served over https) ---------- */
+if('serviceWorker' in navigator && location.protocol==='https:'){
+  navigator.serviceWorker.register('sw.js').catch(()=>{/* not hosted with a SW (e.g. artifact) — fine */});
+}
+
 /* ---------- TABS ---------- */
 function go(tab){
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===tab));
-  ['home','curriculum','quiz','exam','cards','labs','roadmap','badges','resources'].forEach(id=>{
+  ['home','curriculum','quiz','exam','cards','labs','cheats','roadmap','badges','resources'].forEach(id=>{
     document.getElementById('tab-'+id).classList.toggle('hidden',id!==tab);
   });
+  if(tab==='cheats'){ renderCheats(); }
   if(tab==='curriculum'){ closeLesson(); }
   if(tab==='quiz'){ backToQuizMenu(); }
   if(tab==='exam'){ backToExamMenu(); }

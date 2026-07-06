@@ -1,0 +1,14 @@
+{
+  "name": "AzureQuest — Microsoft Cert Study App",
+  "short_name": "AzureQuest",
+  "description": "Gamified study app for AZ-900, AZ-104, DP-900, PL-300, AI-900 & SC-900 — lessons, quizzes, mock exams, flashcards and labs.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b1020",
+  "theme_color": "#0b1020",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
