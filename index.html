@@ -360,6 +360,12 @@
   html[data-theme="light"] nav{background:rgba(238,242,251,.85)}
   /* reduce-motion master switch */
   html.no-anim *,html.no-anim *:before,html.no-anim *:after{animation:none!important;transition:none!important}
+  /* insights bars */
+  .hour-bars{display:flex;gap:3px;align-items:flex-end;height:90px;padding-top:6px}
+  .hbar{flex:1;background:linear-gradient(180deg,var(--accent),var(--accent2));border-radius:4px 4px 0 0;min-height:2px;position:relative}
+  .hbar.best{background:linear-gradient(180deg,var(--gold),#ff9d00)}
+  .hbar small{position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--muted)}
+  .hour-bars{margin-bottom:18px}
   /* theme swatches */
   .theme-grid{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
   .theme-btn{width:86px;border:2px solid var(--line);border-radius:14px;background:var(--bg2);cursor:pointer;padding:8px;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;color:var(--muted);font-weight:700;transition:.15s}
@@ -474,6 +480,7 @@
     <button class="tab" data-tab="cards">🃏 Flashcards</button>
     <button class="tab" data-tab="labs">🧪 Labs</button>
     <button class="tab" data-tab="cheats">📋 Cheat Sheets</button>
+    <button class="tab" data-tab="insights">📊 Insights</button>
     <button class="tab" data-tab="roadmap">🗺️ Roadmap</button>
     <button class="tab" data-tab="badges">🏆 Badges</button>
     <button class="tab" data-tab="resources">🔗 Resources</button>
@@ -699,6 +706,16 @@
         <div class="grid grid2" id="topic-list"></div>
       </div>
       <div class="card">
+        <h2>🧩 Custom Question Packs</h2>
+        <div class="sub">Write your own questions — company content, another exam, anything — and share the pack file with friends. Installed packs appear in "Quiz by Topic".</div>
+        <div id="pack-list"></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+          <button class="btn blue" onclick="openPackEditor()">✍️ Create a pack</button>
+          <button class="btn ghost" onclick="document.getElementById('pack-file').click()">⬆ Import pack</button>
+          <input type="file" id="pack-file" accept=".json,application/json" style="display:none">
+        </div>
+      </div>
+      <div class="card">
         <h2>📊 Your Quiz Stats</h2>
         <div class="grid grid3">
           <div class="qstat"><div class="qs-n" id="qs-taken">0</div><div class="qs-l">quizzes taken</div></div>
@@ -895,6 +912,35 @@
     </div>
   </section>
 
+  <!-- INSIGHTS -->
+  <section id="tab-insights" class="hidden">
+    <div class="card">
+      <h2>📊 Your Numbers</h2>
+      <div class="sub">Everything measured, nothing sent anywhere — it's all computed from your local progress.</div>
+      <div class="grid grid3" id="ins-tiles"></div>
+    </div>
+    <div class="card">
+      <h2>⚡ XP — last 14 days</h2>
+      <div class="sub">Consistency beats intensity. Aim for no empty days.</div>
+      <div class="hour-bars" id="ins-xp" style="height:110px"></div>
+    </div>
+    <div class="card">
+      <h2>🕐 When are you sharpest?</h2>
+      <div class="sub" id="ins-hour-sub">Answer more questions and I'll find your golden hour (needs ~20 answers).</div>
+      <div class="hour-bars" id="ins-hours"></div>
+    </div>
+    <div class="card">
+      <h2>🧠 Topic mastery</h2>
+      <div class="sub">Accuracy per topic, weakest first — your study order, basically.</div>
+      <div id="ins-topics"></div>
+    </div>
+    <div class="card">
+      <h2>📝 Mock exam progression</h2>
+      <div class="sub">Best and latest scaled score per cert.</div>
+      <div id="ins-mocks"></div>
+    </div>
+  </section>
+
   <!-- RESOURCES -->
   <section id="tab-resources" class="hidden">
     <div class="card">
@@ -913,6 +959,7 @@
     <div class="footer-tools">
       <button class="tool-btn" onclick="exportProgress()">⬇ Export progress</button>
       <button class="tool-btn" onclick="document.getElementById('imp-file').click()">⬆ Import progress</button>
+      <button class="tool-btn" onclick="openSync()">☁ Cloud sync</button>
       <button class="tool-btn" onclick="shareApp()">📤 Share this app</button>
       <button class="tool-btn" onclick="startTour()">🎈 App tour</button>
       <button class="tool-btn" onclick="openAppearance()">🎨 Appearance</button>
@@ -957,6 +1004,46 @@
   </svg>
 </div>
 <div class="toast" id="toast"></div>
+<div class="modal-wrap" id="sync-modal">
+  <div class="card">
+    <div class="q-top"><h2 style="margin:0">☁ Cloud Sync</h2><button class="btn ghost" style="padding:7px 13px" onclick="closeSync()">✕ Close</button></div>
+    <div class="sub" style="margin-top:6px">Back up ALL profiles to a <b>private GitHub Gist</b> on YOUR account, and restore on any device. Your token is stored only in this browser and talks only to api.github.com.</div>
+    <h3 style="font-size:14px;margin:12px 0 4px">GitHub token</h3>
+    <div class="cd-label" style="margin-bottom:8px">Create one at github.com → Settings → Developer settings → Personal access tokens → Fine-grained → permission: <b>Gists: read & write</b>. Paste it below.</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <input class="name-input" id="sync-token" type="password" placeholder="github_pat_… or ghp_…">
+      <button class="btn blue" onclick="saveSyncToken()">Save token</button>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
+      <button class="btn" onclick="cloudBackup()">⬆ Back up now</button>
+      <button class="btn ghost" onclick="cloudRestore()">⬇ Restore latest</button>
+    </div>
+    <div class="cd-label" id="sync-status" style="margin-top:12px">Not backed up yet from this browser.</div>
+  </div>
+</div>
+
+<div class="modal-wrap" id="pack-modal">
+  <div class="card">
+    <div class="q-top"><h2 style="margin:0">✍️ Pack Editor</h2><button class="btn ghost" style="padding:7px 13px" onclick="closePackEditor()">✕ Close</button></div>
+    <div class="sub" style="margin-top:6px">Write questions, save the pack, share the exported file. Correct answers are hidden from players until they answer.</div>
+    <input class="name-input" id="pk-name" maxlength="30" placeholder="Pack name (e.g. Team Onboarding)" style="margin:8px 0;width:100%">
+    <textarea class="name-input" id="pk-q" rows="2" placeholder="Question text…" style="width:100%;resize:vertical;font-family:inherit"></textarea>
+    <div class="grid grid2" style="gap:8px;margin-top:8px">
+      <input class="name-input" id="pk-o0" placeholder="Option A"><input class="name-input" id="pk-o1" placeholder="Option B">
+      <input class="name-input" id="pk-o2" placeholder="Option C"><input class="name-input" id="pk-o3" placeholder="Option D">
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px">
+      <select class="speed-sel" id="pk-a" style="padding:10px"><option value="0">Correct: A</option><option value="1">Correct: B</option><option value="2">Correct: C</option><option value="3">Correct: D</option></select>
+      <input class="name-input" id="pk-e" placeholder="Explanation (shown after answering)" style="flex:1">
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+      <button class="btn" onclick="packAddQ()">➕ Add question</button>
+      <button class="btn blue" onclick="packSave()">💾 Save pack</button>
+    </div>
+    <div id="pk-list" style="margin-top:12px"></div>
+  </div>
+</div>
+
 <div class="modal-wrap" id="theme-modal">
   <div class="card">
     <div class="q-top"><h2 style="margin:0">🎨 Appearance</h2><button class="btn ghost" style="padding:7px 13px" onclick="closeAppearance()">✕ Close</button></div>
@@ -1031,8 +1118,8 @@ const CERTS={
   sc900:{name:'SC-900',full:'Security & Compliance Fundamentals',ico:'🛡️'},
 };
 const CERT_ORDER=Object.keys(CERTS);
-function pillOf(c){return CERTS[c]?`<span class="pill ${c}">${CERTS[c].name}</span>`:`<span class="pill boss">👑 GRAND</span>`;}
-function icoOf(c){return CERTS[c]?CERTS[c].ico:'☁️';}
+function pillOf(c){if(CERTS[c])return `<span class="pill ${c}">${CERTS[c].name}</span>`;if(c==='boss')return `<span class="pill boss">👑 GRAND</span>`;return `<span class="pill boss">🧩 PACK</span>`;}
+function icoOf(c){return CERTS[c]?CERTS[c].ico:(c==='boss'?'👑':'🧩');}
 /* ---------- DATA ---------- */
 const CURRICULUM=[
   {cert:'az900',week:'Week 1',title:'Cloud Concepts',sub:'25–30% of exam',items:[
@@ -2772,6 +2859,11 @@ function recordAnswer(topic,correct,q){
     s.seen++; if(!correct) s.wrong++;
   }
   if(q) updateRev(q,correct);
+  // insights: time-of-day performance
+  const hh=new Date().getHours();
+  S.hourStats=S.hourStats||{};
+  const H=S.hourStats[hh]||(S.hourStats[hh]={s:0,r:0});
+  H.s++; if(correct)H.r++;
   save();
 }
 
@@ -3367,6 +3459,7 @@ function renderQuizMenu(){
     el.onclick=()=>startQuiz('topic:'+tp);
     box.appendChild(el);
   });
+  renderPackList();
   // stats
   const q=S.quiz||{};
   document.getElementById('qs-taken').textContent=q.taken||0;
@@ -4143,6 +4236,205 @@ function confettiBurst(){
   })();
 }
 
+/* ---------- CLOUD SYNC (private GitHub Gist, user's own token) ---------- */
+const GH_TOKEN_KEY='azurequest_gh_token', GH_GIST_KEY='azurequest_gist_id';
+function ghToken(){try{return localStorage.getItem(GH_TOKEN_KEY)||'';}catch(e){return '';}}
+function openSync(){
+  document.getElementById('sync-token').value=ghToken()?'••••••••••••':'';
+  syncStatus(localStorage.getItem('azurequest_last_backup')?('Last backup from this browser: '+localStorage.getItem('azurequest_last_backup')):'Not backed up yet from this browser.');
+  document.getElementById('sync-modal').classList.add('show');
+}
+function closeSync(){document.getElementById('sync-modal').classList.remove('show');}
+function syncStatus(msg){const el=document.getElementById('sync-status');if(el)el.textContent=msg;}
+function saveSyncToken(){
+  const v=(document.getElementById('sync-token').value||'').trim();
+  if(!v||v.startsWith('•')){toast('Paste a token first');return;}
+  try{localStorage.setItem(GH_TOKEN_KEY,v);}catch(e){}
+  document.getElementById('sync-token').value='••••••••••••';
+  toast('🔐 Token saved in this browser only'); syncStatus('Token saved. Ready to back up.');
+}
+function collectAllSaves(){
+  const out={v:1,when:new Date().toISOString(),profs:PROFS,saves:{}};
+  PROFS.list.forEach(p=>{try{const raw=localStorage.getItem(profKey(p.id));if(raw)out.saves[p.id]=raw;}catch(e){}});
+  return out;
+}
+async function cloudBackup(){
+  const tok=ghToken(); if(!tok){toast('Save your GitHub token first');return;}
+  syncStatus('Backing up…');
+  const body={description:'AzureQuest progress backup',public:false,files:{'azurequest-progress.json':{content:JSON.stringify(collectAllSaves(),null,2)}}};
+  const gid=localStorage.getItem(GH_GIST_KEY);
+  try{
+    const res=await fetch('https://api.github.com/gists'+(gid?'/'+gid:''),{
+      method:gid?'PATCH':'POST',
+      headers:{'Authorization':'Bearer '+tok,'Accept':'application/vnd.github+json','Content-Type':'application/json'},
+      body:JSON.stringify(body)
+    });
+    if(res.status===404&&gid){localStorage.removeItem(GH_GIST_KEY);return cloudBackup();} // gist was deleted — create fresh
+    if(!res.ok)throw new Error('GitHub said '+res.status+(res.status===401?' — token invalid or missing Gists permission':''));
+    const data=await res.json();
+    localStorage.setItem(GH_GIST_KEY,data.id);
+    const stamp=new Date().toLocaleString();
+    localStorage.setItem('azurequest_last_backup',stamp);
+    syncStatus('✅ Backed up '+stamp+' → private gist '+data.id.slice(0,8)+'…');
+    toast('☁ Progress backed up to your GitHub'); sfx('win');
+  }catch(err){ syncStatus('⚠️ Backup failed: '+err.message); sfx('bad'); }
+}
+async function cloudRestore(){
+  const tok=ghToken(); if(!tok){toast('Save your GitHub token first');return;}
+  syncStatus('Looking for your backup…');
+  try{
+    let gid=localStorage.getItem(GH_GIST_KEY);
+    if(!gid){ // find it on the account (new device)
+      const ls=await fetch('https://api.github.com/gists?per_page=100',{headers:{'Authorization':'Bearer '+tok,'Accept':'application/vnd.github+json'}});
+      if(!ls.ok)throw new Error('GitHub said '+ls.status);
+      const gists=await ls.json();
+      const hit=gists.find(g=>g.files&&g.files['azurequest-progress.json']);
+      if(!hit)throw new Error('no AzureQuest backup found on this account');
+      gid=hit.id; localStorage.setItem(GH_GIST_KEY,gid);
+    }
+    const res=await fetch('https://api.github.com/gists/'+gid,{headers:{'Authorization':'Bearer '+tok,'Accept':'application/vnd.github+json'}});
+    if(!res.ok)throw new Error('GitHub said '+res.status);
+    const g=await res.json();
+    const data=JSON.parse(g.files['azurequest-progress.json'].content);
+    if(!data||!data.saves)throw new Error('backup file looks corrupted');
+    syncStatus('Backup from '+new Date(data.when).toLocaleString()+' found.');
+    appConfirm('Restore backup from '+new Date(data.when).toLocaleString()+'? It REPLACES all profiles in this browser.',()=>{
+      try{
+        localStorage.setItem(PROFS_KEY,JSON.stringify(data.profs));
+        data.profs.list.forEach(p=>{ if(data.saves[p.id]) localStorage.setItem(profKey(p.id),data.saves[p.id]); });
+      }catch(e){}
+      location.reload();
+    });
+  }catch(err){ syncStatus('⚠️ Restore failed: '+err.message); sfx('bad'); }
+}
+
+/* ---------- CUSTOM QUESTION PACKS ---------- */
+const PACKS_KEY='azurequest_packs';
+function loadPacks(){try{return JSON.parse(localStorage.getItem(PACKS_KEY))||[];}catch(e){return [];}}
+function savePacks(p){try{localStorage.setItem(PACKS_KEY,JSON.stringify(p));}catch(e){}}
+function injectPacks(){
+  loadPacks().forEach(p=>p.questions.forEach(q=>QUESTIONS.push({q:q.q,o:q.o,a:q.a,e:q.e,cert:'custom',topic:'🧩 '+p.name})));
+}
+function renderPackList(){
+  const box=document.getElementById('pack-list');if(!box)return;
+  const packs=loadPacks();
+  box.innerHTML=packs.length?'':'<div class="cd-label">No packs installed yet — create one or import a friend\'s.</div>';
+  packs.forEach((p,i)=>{
+    const row=document.createElement('div');row.className='prof-row';
+    row.innerHTML=`<div class="pr-av">🧩</div><div class="pr-name">${p.name}<small>${p.questions.length} questions · by ${p.author||'unknown'}</small></div>
+      <button class="weak-drill" data-a="play">▶ Quiz</button>
+      <button class="weak-drill" data-a="exp">⬇</button>
+      <button class="weak-drill" data-a="del" style="color:var(--red)">🗑</button>`;
+    row.querySelector('[data-a=play]').onclick=()=>startQuiz('topic:🧩 '+p.name);
+    row.querySelector('[data-a=exp]').onclick=()=>{
+      const blob=new Blob([JSON.stringify(p,null,2)],{type:'application/json'});
+      const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='azurequest-pack-'+p.name.replace(/\W+/g,'-')+'.json';a.click();URL.revokeObjectURL(a.href);
+    };
+    row.querySelector('[data-a=del]').onclick=()=>appConfirm('Remove pack "'+p.name+'"?',()=>{const ps=loadPacks();ps.splice(i,1);savePacks(ps);location.reload();});
+    box.appendChild(row);
+  });
+}
+let PK={qs:[]};
+function openPackEditor(){PK={qs:[]};document.getElementById('pk-name').value='';renderPkList();document.getElementById('pack-modal').classList.add('show');}
+function closePackEditor(){document.getElementById('pack-modal').classList.remove('show');}
+function packAddQ(){
+  const q=(document.getElementById('pk-q').value||'').trim();
+  const o=[0,1,2,3].map(i=>(document.getElementById('pk-o'+i).value||'').trim());
+  const e=(document.getElementById('pk-e').value||'').trim();
+  if(!q||o.some(x=>!x)){toast('Fill the question and all four options');return;}
+  PK.qs.push({q,o,a:+document.getElementById('pk-a').value,e:e||'Correct!'});
+  ['pk-q','pk-o0','pk-o1','pk-o2','pk-o3','pk-e'].forEach(id=>document.getElementById(id).value='');
+  renderPkList(); sfx('good');
+}
+function renderPkList(){
+  const box=document.getElementById('pk-list');
+  box.innerHTML=PK.qs.length?('<b>'+PK.qs.length+' question'+(PK.qs.length>1?'s':'')+' in this pack:</b>'):'';
+  PK.qs.forEach((x,i)=>{
+    const row=document.createElement('div');row.className='prof-row';
+    row.innerHTML=`<div class="pr-name" style="font-size:13px">${i+1}. ${x.q}</div><button class="weak-drill" style="color:var(--red)">✕</button>`;
+    row.querySelector('button').onclick=()=>{PK.qs.splice(i,1);renderPkList();};
+    box.appendChild(row);
+  });
+}
+function packSave(){
+  const name=(document.getElementById('pk-name').value||'').trim();
+  if(!name){toast('Give the pack a name');return;}
+  if(!PK.qs.length){toast('Add at least one question');return;}
+  const packs=loadPacks();
+  packs.push({name,author:activeProf().name||'anonymous',questions:PK.qs});
+  savePacks(packs);
+  toast('🧩 Pack saved! Reloading to activate…');
+  setTimeout(()=>location.reload(),900);
+}
+
+/* ---------- INSIGHTS ---------- */
+function renderInsights(){
+  const answered=Object.values(S.tstats||{}).reduce((a,b)=>a+b.seen,0);
+  const wrong=Object.values(S.tstats||{}).reduce((a,b)=>a+b.wrong,0);
+  const acc=answered?Math.round((answered-wrong)/answered*100):0;
+  const tiles=[
+    [answered,'questions answered'],[answered?acc+'%':'—','overall accuracy'],
+    [S.xp,'total XP'],[Object.keys(S.days||{}).length,'active days'],
+    [Object.keys(S.badges||{}).length,'badges'],[(S.examHist||[]).length,'mocks taken'],
+  ];
+  document.getElementById('ins-tiles').innerHTML=tiles.map(([n,l])=>`<div class="qstat"><div class="qs-n">${n}</div><div class="qs-l">${l}</div></div>`).join('');
+  // XP last 14 days
+  const xb=document.getElementById('ins-xp');xb.innerHTML='';
+  let maxXp=1; const days=[];
+  for(let i=13;i>=0;i--){const d=new Date(Date.now()-i*86400000).toISOString().slice(0,10);const v=(S.days&&S.days[d])||0;days.push([d,v]);maxXp=Math.max(maxXp,v);}
+  days.forEach(([d,v])=>{
+    const b=document.createElement('div');b.className='hbar';
+    b.style.height=Math.max(2,v/maxXp*100)+'%';
+    b.title=d+' · '+v+' XP';
+    b.innerHTML='<small>'+d.slice(8)+'</small>';
+    xb.appendChild(b);
+  });
+  // hour performance
+  const hb=document.getElementById('ins-hours');hb.innerHTML='';
+  const hs=S.hourStats||{}; const totalSeen=Object.values(hs).reduce((a,b)=>a+b.s,0);
+  let best=null;
+  for(let h=0;h<24;h++){const H=hs[h];if(H&&H.s>=5){const r=H.r/H.s;if(!best||r>best.r)best={h,r};}}
+  document.getElementById('ins-hour-sub').textContent = totalSeen<20
+    ? 'Answer more questions and I\'ll find your golden hour (needs ~20 answers). So far: '+totalSeen+'.'
+    : (best?('Your golden hour so far: around '+best.h+':00 — '+Math.round(best.r*100)+'% accuracy. Schedule the hard stuff there.'):'Keep answering — no hour has enough data yet.');
+  for(let h=0;h<24;h++){
+    const H=hs[h]; const accH=H&&H.s?H.r/H.s:0;
+    const b=document.createElement('div');
+    b.className='hbar'+(best&&best.h===h?' best':'');
+    b.style.height=H?Math.max(4,accH*100)+'%':'2%';
+    b.title=h+':00 · '+(H?(H.r+'/'+H.s+' correct'):'no data');
+    if(h%6===0)b.innerHTML='<small>'+h+'h</small>';
+    hb.appendChild(b);
+  }
+  // topic mastery
+  const tb=document.getElementById('ins-topics');tb.innerHTML='';
+  const topics=Object.entries(S.tstats||{}).filter(([,v])=>v.seen>=3)
+    .map(([t,v])=>({t,acc:Math.round((v.seen-v.wrong)/v.seen*100),seen:v.seen}))
+    .sort((a,b)=>a.acc-b.acc);
+  if(!topics.length)tb.innerHTML='<div class="cd-label">Answer a few quizzes and your per-topic mastery appears here.</div>';
+  topics.forEach(x=>{
+    const row=document.createElement('div');row.className='barrow';
+    row.innerHTML=`<div class="lbl"><b style="color:${x.acc>=80?'var(--green)':x.acc>=60?'var(--gold)':'var(--red)'}">${x.t}</b><b>${x.acc}% · ${x.seen} seen</b></div>
+      <div class="bar"><i style="width:${x.acc}%;background:${x.acc>=80?'linear-gradient(90deg,var(--green),var(--cyan))':x.acc>=60?'linear-gradient(90deg,var(--gold),#ff9d00)':'linear-gradient(90deg,var(--red),var(--gold))'}"></i></div>`;
+    tb.appendChild(row);
+  });
+  // mock progression
+  const mb=document.getElementById('ins-mocks');mb.innerHTML='';
+  const hist=S.examHist||[];
+  if(!hist.length){mb.innerHTML='<div class="cd-label">Take a mock exam and your progression shows here.</div>';}
+  else{
+    const byCert={};
+    hist.slice().reverse().forEach(h=>{(byCert[h.cert]=byCert[h.cert]||[]).push(h.scaled);});
+    Object.entries(byCert).forEach(([c,scores])=>{
+      const best=Math.max(...scores), last=scores[scores.length-1];
+      const row=document.createElement('div');row.className='weak-row';
+      row.innerHTML=`<div style="min-width:100px">${pillOf(c)}</div>
+        <div style="flex:1">best <b style="color:${best>=700?'var(--green)':'var(--gold)'}">${best}</b> · latest <b>${last}</b> · ${scores.length} attempt${scores.length>1?'s':''} <span class="cd-label">(${scores.join(' → ')})</span></div>`;
+      mb.appendChild(row);
+    });
+  }
+}
+
 /* ---------- APPEARANCE — themes, background animation, motion ---------- */
 S.fx=Object.assign({theme:'midnight',anim:'fireflies',motion:'full'},S.fx||{});
 const THEMES={
@@ -4413,6 +4705,7 @@ function go(tab){
     document.getElementById('tab-'+id).classList.toggle('hidden',id!==tab);
   });
   if(tab==='cheats'){ renderCheats(); }
+  if(tab==='insights'){ renderInsights(); }
   if(tab==='curriculum'){ closeLesson(); }
   if(tab==='quiz'){ backToQuizMenu(); }
   if(tab==='exam'){ backToExamMenu(); }
@@ -4454,6 +4747,23 @@ document.getElementById('imp-file').onchange=(e)=>{
   e.target.value='';
 };
 renderCardChips();
+// custom packs: merge installed pack questions into the bank
+injectPacks();
+document.getElementById('pack-file').onchange=(e)=>{
+  const file=e.target.files[0]; if(!file) return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    try{
+      const p=JSON.parse(rd.result);
+      if(!p.name||!Array.isArray(p.questions)||!p.questions.length) throw new Error('bad');
+      if(!p.questions.every(x=>x.q&&Array.isArray(x.o)&&x.o.length===4&&typeof x.a==='number')) throw new Error('bad');
+      const packs=loadPacks(); packs.push({name:p.name,author:p.author||'friend',questions:p.questions}); savePacks(packs);
+      toast('🧩 Pack "'+p.name+'" installed! Reloading…');
+      setTimeout(()=>location.reload(),900);
+    }catch(err){ toast('⚠️ Not a valid AzureQuest pack file'); }
+  };
+  rd.readAsText(file); e.target.value='';
+};
 // appearance: apply saved theme + ambient + motion
 applyTheme(S.fx.theme);
 if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches&&S.fx.motion==='full'){S.fx.motion='reduced';}
