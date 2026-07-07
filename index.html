@@ -401,7 +401,9 @@
     border-radius:18px 18px 4px 18px;padding:16px 18px;box-shadow:var(--shadow);
     animation:bubbleIn .25s cubic-bezier(.34,1.56,.64,1) both}
   @keyframes bubbleIn{from{opacity:0;transform:translateY(14px) scale(.92)}to{opacity:1;transform:none}}
-  #bubble-text{font-size:14px;line-height:1.65;color:#e6ecff}
+  #bubble-text{font-size:14px;line-height:1.65;color:#e6ecff;max-height:42vh;overflow-y:auto}
+  .ai-out{background:var(--bg2);border:1px solid var(--line);border-left:4px solid var(--purple);border-radius:12px;padding:14px 16px;margin-top:12px;font-size:14px;line-height:1.7;max-height:50vh;overflow-y:auto;white-space:pre-wrap}
+  .ai-out b{color:var(--gold)}
   #bubble-text b{color:var(--gold)}
   .bubble-btns{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center}
   .bubble-btns .tb{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;border-radius:10px;padding:7px 14px;font-weight:800;cursor:pointer;font-size:13px}
@@ -960,6 +962,7 @@
       <button class="tool-btn" onclick="exportProgress()">⬇ Export progress</button>
       <button class="tool-btn" onclick="document.getElementById('imp-file').click()">⬆ Import progress</button>
       <button class="tool-btn" onclick="openSync()">☁ Cloud sync</button>
+      <button class="tool-btn" onclick="openAI()">🤖 AI Tutor</button>
       <button class="tool-btn" onclick="shareApp()">📤 Share this app</button>
       <button class="tool-btn" onclick="startTour()">🎈 App tour</button>
       <button class="tool-btn" onclick="openAppearance()">🎨 Appearance</button>
@@ -1004,6 +1007,28 @@
   </svg>
 </div>
 <div class="toast" id="toast"></div>
+<div class="modal-wrap" id="ai-modal">
+  <div class="card">
+    <div class="q-top"><h2 style="margin:0">🤖 AI Tutor</h2><button class="btn ghost" style="padding:7px 13px" onclick="closeAI()">✕ Close</button></div>
+    <div class="sub" style="margin-top:6px">Give your buddy a brain: paste your own Claude API key (console.anthropic.com → API keys). It stays in this browser only and calls Anthropic directly. Costs pennies per session — you're in control.</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin:8px 0">
+      <input class="name-input" id="ai-key" type="password" placeholder="sk-ant-…">
+      <button class="btn blue" onclick="saveAiKey()">Save key</button>
+    </div>
+    <h3 style="font-size:14px;margin:14px 0 6px">Ask anything</h3>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <textarea class="name-input" id="ai-q" rows="2" placeholder="e.g. Explain CALCULATE vs FILTER like I'm 12…" style="flex:1;resize:vertical;font-family:inherit"></textarea>
+      <button class="btn" onclick="tutorAsk()">Ask →</button>
+    </div>
+    <h3 style="font-size:14px;margin:14px 0 6px">Generate fresh practice questions</h3>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <input class="name-input" id="ai-topic" placeholder="Topic (e.g. NSG rules, DAX time intelligence)" style="flex:1">
+      <button class="btn" onclick="genQuestions()">🎲 Make me 5</button>
+    </div>
+    <div class="ai-out hidden" id="ai-out"></div>
+  </div>
+</div>
+
 <div class="modal-wrap" id="sync-modal">
   <div class="card">
     <div class="q-top"><h2 style="margin:0">☁ Cloud Sync</h2><button class="btn ghost" style="padding:7px 13px" onclick="closeSync()">✕ Close</button></div>
@@ -3518,7 +3543,9 @@ function answer(idx,el){
   recordAnswer(q.topic, idx===q.a, q);
   document.getElementById('q-score').textContent='Score: '+QZ.score;
   const ex=document.getElementById('q-explain');
-  ex.innerHTML='<b>'+(idx===q.a?'Correct.':'Not quite.')+'</b> '+q.e;
+  CURQ=q;
+  ex.innerHTML='<b>'+(idx===q.a?'Correct.':'Not quite.')+'</b> '+q.e
+    +(aiKey()?' <button class="weak-drill" style="margin-left:8px" onclick="aiExplainCur()">🤖 Explain deeper</button>':'');
   ex.classList.remove('hidden');
   const nb=document.getElementById('q-next');
   nb.style.display='inline-block';
@@ -4236,6 +4263,78 @@ function confettiBurst(){
   })();
 }
 
+/* ---------- AI TUTOR (bring your own Claude API key) ---------- */
+const AI_KEY='azurequest_ai_key';
+function aiKey(){try{return localStorage.getItem(AI_KEY)||'';}catch(e){return '';}}
+function openAI(){
+  document.getElementById('ai-key').value=aiKey()?'••••••••••••':'';
+  document.getElementById('ai-modal').classList.add('show');
+}
+function closeAI(){document.getElementById('ai-modal').classList.remove('show');}
+function saveAiKey(){
+  const v=(document.getElementById('ai-key').value||'').trim();
+  if(!v||v.startsWith('•')){toast('Paste a key first');return;}
+  try{localStorage.setItem(AI_KEY,v);}catch(e){}
+  document.getElementById('ai-key').value='••••••••••••';
+  toast('🔐 Key saved in this browser only'); sfx('good');
+}
+function aiOut(msg,show){const el=document.getElementById('ai-out');el.classList.toggle('hidden',!show);el.textContent=msg||'';}
+async function aiCall(userText,maxTokens){
+  const key=aiKey(); if(!key){openAI();toast('Add your Claude API key first');return null;}
+  const res=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({
+      model:'claude-haiku-4-5-20251001',
+      max_tokens:maxTokens||700,
+      system:'You are '+buddyName()+', a friendly, encouraging tutor inside a Microsoft certification study app covering AZ-900, AZ-104, DP-900, PL-300, AI-900 and SC-900. Answer concisely (under 200 words unless asked), use plain language and small analogies, and stay on study topics.',
+      messages:[{role:'user',content:userText}]
+    })
+  });
+  if(!res.ok){
+    const t=res.status===401?'Key rejected — check it at console.anthropic.com':'API error '+res.status;
+    throw new Error(t);
+  }
+  const data=await res.json();
+  return (data.content&&data.content[0]&&data.content[0].text)||'';
+}
+async function tutorAsk(){
+  const q=(document.getElementById('ai-q').value||'').trim();
+  if(!q){toast('Type a question first');return;}
+  aiOut('🤖 '+buddyName()+' is thinking…',true);
+  try{ aiOut(await aiCall(q),true); sfx('good'); }
+  catch(err){ aiOut('⚠️ '+err.message,true); sfx('bad'); }
+}
+let CURQ=null;
+async function aiExplainCur(){
+  if(!CURQ)return;
+  if(!aiKey()){openAI();toast('Add your Claude API key to unlock deeper explanations');return;}
+  mascotSay('🤖 Let me think about that one…');
+  try{
+    const txt=await aiCall('Explain this exam question in a deeper but simple way, including why each wrong option is wrong:\nQ: '+CURQ.q+'\nOptions: '+CURQ.o.join(' | ')+'\nCorrect answer: '+CURQ.o[CURQ.a]+'\nOfficial explanation: '+CURQ.e,600);
+    mascotSay(txt.replace(/</g,'&lt;').replace(/\n/g,'<br>'));
+  }catch(err){ mascotSay('⚠️ '+err.message); }
+}
+async function genQuestions(){
+  const topic=(document.getElementById('ai-topic').value||'').trim();
+  if(!topic){toast('Name a topic first');return;}
+  aiOut('🎲 Writing 5 fresh questions on "'+topic+'"…',true);
+  try{
+    const raw=await aiCall('Write exactly 5 multiple-choice exam-style questions about "'+topic+'" for Microsoft certification prep. Respond with ONLY a JSON array, no other text, each item: {"q":"question","o":["A","B","C","D"],"a":correctIndex0to3,"e":"one-sentence explanation"}',1500);
+    const js=raw.slice(raw.indexOf('['),raw.lastIndexOf(']')+1);
+    const qs=JSON.parse(js);
+    if(!Array.isArray(qs)||!qs.length)throw new Error('could not parse questions');
+    qs.forEach(x=>{x.cert='custom';x.topic='🤖 AI: '+topic;});
+    closeAI();
+    go('quiz');
+    QZ={pool:qs,i:0,score:0,answered:0,mode:'ai'};
+    document.getElementById('quiz-menu').classList.add('hidden');
+    document.getElementById('quiz-result').classList.add('hidden');
+    document.getElementById('quiz-run').classList.remove('hidden');
+    showQ(); toast('🎲 Fresh AI quiz on "'+topic+'" — go!');
+  }catch(err){ aiOut('⚠️ '+err.message+' — try again, models occasionally return odd formatting.',true); sfx('bad'); }
+}
+
 /* ---------- CLOUD SYNC (private GitHub Gist, user's own token) ---------- */
 const GH_TOKEN_KEY='azurequest_gh_token', GH_GIST_KEY='azurequest_gist_id';
 function ghToken(){try{return localStorage.getItem(GH_TOKEN_KEY)||'';}catch(e){return '';}}
@@ -4658,7 +4757,7 @@ function mascotClick(){
     S.streak>=2?`Streak: <b>${S.streak} days</b> 🔥 — don't you dare break it today.`:null,
     '💪 '+MOTIV[Math.floor(Math.random()*MOTIV.length)],
   ].filter(Boolean);
-  const btns=[['🎈 App tour',()=>{hideBubble();startTour();}],['🎨 Customize',()=>{hideBubble();openBuddy();}]];
+  const btns=[['🎈 App tour',()=>{hideBubble();startTour();}],['🎨 Customize',()=>{hideBubble();openBuddy();}],['🤖 Ask AI',()=>{hideBubble();openAI();}]];
   if(due) btns.push(['🔁 Review now',()=>{hideBubble();go('quiz');startQuiz('review');}]);
   btns.push(['✕',hideBubble,true]);
   mascotSay(lines[Math.floor(Math.random()*lines.length)],btns);
