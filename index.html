@@ -19,12 +19,13 @@
     --gold:#ffc800; --red:#ff4b4b; --purple:#a560ff; --cyan:#1cb0f6;
     --text:#eaf0ff; --muted:#93a0c4; --line:#2a3560;
     --shadow:0 8px 30px rgba(0,0,0,.4);
+    --glow1:#1a2450; --glow2:#2a1a50;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{
     font-family:'Nunito','Segoe UI',system-ui,-apple-system,sans-serif;
-    background:radial-gradient(1200px 600px at 20% -10%,#1a2450 0%,transparent 60%),
-               radial-gradient(1000px 500px at 100% 0%,#2a1a50 0%,transparent 55%),
+    background:radial-gradient(1200px 600px at 20% -10%,var(--glow1) 0%,transparent 60%),
+               radial-gradient(1000px 500px at 100% 0%,var(--glow2) 0%,transparent 55%),
                var(--bg);
     color:var(--text); min-height:100vh; padding-bottom:60px;
   }
@@ -342,6 +343,29 @@
     .cheat-block code{color:#000;background:#eee}
     .card h2,.cheat-block h3{color:#000}
   }
+  /* ===== appearance: light theme fixes for hardcoded darks ===== */
+  html[data-theme="light"] .lesson-body,html[data-theme="light"] .tip p,html[data-theme="light"] .q-explain,
+  html[data-theme="light"] #bubble-text,html[data-theme="light"] .deck-def,html[data-theme="light"] .q-context{color:#2c3550}
+  html[data-theme="light"] .opt.correct,html[data-theme="light"] .task.done{background:#d9f2d0}
+  html[data-theme="light"] .opt.wrong{background:#ffdcdc}
+  html[data-theme="light"] .callout.analogy{background:#fff3d6}
+  html[data-theme="light"] .callout.exam{background:#efe6ff}
+  html[data-theme="light"] .callout.tipc{background:#ddf3e4}
+  html[data-theme="light"] .tip{background:linear-gradient(135deg,#e8edff,#f6ecff);border-color:var(--accent)}
+  html[data-theme="light"] .q-context{background:#fff8e6}
+  html[data-theme="light"] #bubble{background:linear-gradient(135deg,#ffffff,#f2ecff)}
+  html[data-theme="light"] .confirm-bar{background:#ffffff}
+  html[data-theme="light"] .tchip.on{background:#e4f6e0}
+  html[data-theme="light"] .logo h1{background:linear-gradient(90deg,#1c2547,var(--accent));-webkit-background-clip:text;background-clip:text}
+  html[data-theme="light"] nav{background:rgba(238,242,251,.85)}
+  /* reduce-motion master switch */
+  html.no-anim *,html.no-anim *:before,html.no-anim *:after{animation:none!important;transition:none!important}
+  /* theme swatches */
+  .theme-grid{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+  .theme-btn{width:86px;border:2px solid var(--line);border-radius:14px;background:var(--bg2);cursor:pointer;padding:8px;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;color:var(--muted);font-weight:700;transition:.15s}
+  .theme-btn:hover{transform:translateY(-3px)}
+  .theme-btn.sel{border-color:var(--gold);color:var(--text)}
+  .theme-btn .tprev{width:100%;height:34px;border-radius:8px;border:1px solid rgba(255,255,255,.15)}
   /* ===== Nimbus mascot & guided tour ===== */
   #mascot{position:fixed;right:16px;bottom:16px;width:76px;height:76px;z-index:96;cursor:pointer;
     filter:drop-shadow(0 12px 14px rgba(0,0,0,.5));animation:mbob 3.4s ease-in-out infinite;transition:transform .2s}
@@ -891,6 +915,7 @@
       <button class="tool-btn" onclick="document.getElementById('imp-file').click()">⬆ Import progress</button>
       <button class="tool-btn" onclick="shareApp()">📤 Share this app</button>
       <button class="tool-btn" onclick="startTour()">🎈 App tour</button>
+      <button class="tool-btn" onclick="openAppearance()">🎨 Appearance</button>
       <button class="tool-btn" onclick="shareJourney()">🏆 My journey card</button>
     </div>
     <input type="file" id="imp-file" accept=".json,application/json" style="display:none">
@@ -932,6 +957,20 @@
   </svg>
 </div>
 <div class="toast" id="toast"></div>
+<div class="modal-wrap" id="theme-modal">
+  <div class="card">
+    <div class="q-top"><h2 style="margin:0">🎨 Appearance</h2><button class="btn ghost" style="padding:7px 13px" onclick="closeAppearance()">✕ Close</button></div>
+    <div class="sub" style="margin-top:6px">Make it comfortable for YOUR eyes. Everything applies instantly and is remembered per profile.</div>
+    <h3 style="font-size:14px;margin:12px 0 0">Theme</h3>
+    <div class="theme-grid" id="theme-grid"></div>
+    <h3 style="font-size:14px;margin:12px 0 0">Background animation</h3>
+    <div class="filter-chips" id="anim-chips" style="margin-top:8px"></div>
+    <h3 style="font-size:14px;margin:12px 0 0">Motion</h3>
+    <div class="filter-chips" id="motion-chips" style="margin-top:8px"></div>
+    <div class="cd-label" style="margin-top:8px">Reduced motion turns off all animations — background, confetti, buddy bounce, shine effects.</div>
+  </div>
+</div>
+
 <div class="modal-wrap" id="buddy-modal">
   <div class="card">
     <div class="q-top"><h2 style="margin:0">🎨 Buddy Studio</h2><button class="btn ghost" style="padding:7px 13px" onclick="closeBuddy()">✕ Close</button></div>
@@ -4013,29 +4052,39 @@ document.addEventListener('keydown',e=>{
   }
 });
 
-/* ---------- FIREFLIES (ambient particle background) ---------- */
+/* ---------- AMBIENT BACKGROUND (fireflies / snow / stars / off) ---------- */
+const AMB={raf:null,mode:'off',P:[],cx:null,W:0,H:0,mouse:null};
 (function(){
-  const cv=document.getElementById('fireflies');
-  if(!cv)return;
-  if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches){cv.remove();return;}
-  const cx=cv.getContext('2d');
-  let W,H;
-  const rs=()=>{W=cv.width=innerWidth;H=cv.height=innerHeight;};
+  const cv=document.getElementById('fireflies');if(!cv)return;
+  AMB.cx=cv.getContext('2d');
+  const rs=()=>{AMB.W=cv.width=innerWidth;AMB.H=cv.height=innerHeight;};
   rs(); addEventListener('resize',rs);
-  const colors=[[79,140,255],[124,92,255],[28,176,246],[255,200,0]];
-  const P=[];
-  for(let i=0;i<34;i++)P.push({
-    x:Math.random()*innerWidth,y:Math.random()*innerHeight,
-    r:1+Math.random()*2.2,a:Math.random()*Math.PI*2,
-    v:.15+Math.random()*.35,tw:Math.random()*Math.PI*2,c:Math.random()
+  addEventListener('pointermove',e=>{AMB.mouse={x:e.clientX,y:e.clientY};});
+})();
+function startAmbient(mode){
+  if(AMB.raf){cancelAnimationFrame(AMB.raf);AMB.raf=null;}
+  AMB.mode=mode||'fireflies';
+  if(!AMB.cx)return;
+  if(AMB.mode==='off'){AMB.cx.clearRect(0,0,AMB.W,AMB.H);AMB.P=[];return;}
+  const n=AMB.mode==='snow'?60:AMB.mode==='stars'?70:34;
+  AMB.P=[];
+  for(let i=0;i<n;i++)AMB.P.push({
+    x:Math.random()*AMB.W,y:Math.random()*AMB.H,
+    r:AMB.mode==='stars'?(.6+Math.random()*1.6):(1+Math.random()*2.2),
+    a:Math.random()*Math.PI*2,v:.15+Math.random()*.35,
+    fall:.4+Math.random()*.9,sway:Math.random()*Math.PI*2,
+    tw:Math.random()*Math.PI*2,c:Math.random()
   });
-  let mouse=null;
-  addEventListener('pointermove',e=>{mouse={x:e.clientX,y:e.clientY};});
-  (function frame(){
-    requestAnimationFrame(frame);
-    if(document.hidden)return;
-    cx.clearRect(0,0,W,H);
-    P.forEach(p=>{
+  ambFrame();
+}
+function ambFrame(){
+  AMB.raf=requestAnimationFrame(ambFrame);
+  if(document.hidden)return;
+  const {cx,W,H,P,mode,mouse}=AMB;
+  cx.clearRect(0,0,W,H);
+  const colors=[[79,140,255],[124,92,255],[28,176,246],[255,200,0]];
+  P.forEach(p=>{
+    if(mode==='fireflies'){
       p.a+=(Math.random()-.5)*.14;
       if(mouse){const dx=mouse.x-p.x,dy=mouse.y-p.y,d=Math.hypot(dx,dy);
         if(d<160&&d>1){p.x+=dx/d*.25;p.y+=dy/d*.25;}}
@@ -4050,13 +4099,25 @@ document.addEventListener('keydown',e=>{
       g.addColorStop(1,'rgba(0,0,0,0)');
       cx.fillStyle=g; cx.beginPath(); cx.arc(p.x,p.y,p.r*6,0,7); cx.fill();
       cx.fillStyle=`rgba(255,255,255,${al*.8})`; cx.beginPath(); cx.arc(p.x,p.y,p.r*.8,0,7); cx.fill();
-    });
-  })();
-})();
+    } else if(mode==='snow'){
+      p.sway+=.02; p.y+=p.fall; p.x+=Math.sin(p.sway)*.5;
+      if(p.y>H+8){p.y=-8;p.x=Math.random()*W;}
+      cx.fillStyle=`rgba(255,255,255,${.35+.35*p.c})`;
+      cx.beginPath(); cx.arc(p.x,p.y,p.r,0,7); cx.fill();
+    } else if(mode==='stars'){
+      p.tw+=.02+p.c*.04;
+      const al=.15+.65*Math.abs(Math.sin(p.tw));
+      cx.fillStyle=`rgba(255,255,255,${al})`;
+      cx.beginPath(); cx.arc(p.x,p.y,p.r,0,7); cx.fill();
+      if(p.r>1.6){ cx.fillRect(p.x-p.r*3,p.y-.4,p.r*6,.8); cx.fillRect(p.x-.4,p.y-p.r*3,.8,p.r*6); }
+    }
+  });
+}
 
 /* ---------- CONFETTI ---------- */
 function confettiBurst(){
   const cv=document.getElementById('confetti-c');if(!cv)return;
+  if(S.fx&&S.fx.motion==='reduced')return;
   if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)return;
   const cx=cv.getContext('2d');
   cv.width=innerWidth; cv.height=innerHeight;
@@ -4080,6 +4141,55 @@ function confettiBurst(){
     });
     if(alive)requestAnimationFrame(f); else cx.clearRect(0,0,cv.width,cv.height);
   })();
+}
+
+/* ---------- APPEARANCE — themes, background animation, motion ---------- */
+S.fx=Object.assign({theme:'midnight',anim:'fireflies',motion:'full'},S.fx||{});
+const THEMES={
+  midnight:{label:'Midnight',vars:{'--bg':'#0b1020','--bg2':'#131a30','--card':'#1a2240','--card2':'#222c52','--accent':'#4f8cff','--accent2':'#7c5cff','--text':'#eaf0ff','--muted':'#93a0c4','--line':'#2a3560','--glow1':'#1a2450','--glow2':'#2a1a50','--shadow':'0 8px 30px rgba(0,0,0,.4)'},prev:['#0b1020','#4f8cff','#7c5cff']},
+  ocean:{label:'Ocean',vars:{'--bg':'#041722','--bg2':'#0a2532','--card':'#0d2f3f','--card2':'#144052','--accent':'#14b8c4','--accent2':'#3b82f6','--text':'#e6f7fb','--muted':'#8fb6c4','--line':'#1c4a5e','--glow1':'#0a3547','--glow2':'#12253e','--shadow':'0 8px 30px rgba(0,0,0,.4)'},prev:['#041722','#14b8c4','#3b82f6']},
+  sunset:{label:'Sunset',vars:{'--bg':'#1a0e24','--bg2':'#251330','--card':'#2e1a3e','--card2':'#3c2450','--accent':'#ff6b81','--accent2':'#ff9d5c','--text':'#ffeef2','--muted':'#c49ab0','--line':'#4a2c60','--glow1':'#3a1a40','--glow2':'#40202a','--shadow':'0 8px 30px rgba(0,0,0,.4)'},prev:['#1a0e24','#ff6b81','#ff9d5c']},
+  forest:{label:'Forest',vars:{'--bg':'#0b1810','--bg2':'#12251a','--card':'#16301f','--card2':'#1e402a','--accent':'#34d399','--accent2':'#a3e635','--text':'#eafff2','--muted':'#93c4a4','--line':'#29513a','--glow1':'#123a24','--glow2':'#1a3520','--shadow':'0 8px 30px rgba(0,0,0,.4)'},prev:['#0b1810','#34d399','#a3e635']},
+  light:{label:'Light',vars:{'--bg':'#eef2fb','--bg2':'#ffffff','--card':'#ffffff','--card2':'#f2f5ff','--accent':'#4f8cff','--accent2':'#7c5cff','--text':'#1c2547','--muted':'#5a6690','--line':'#d5ddf0','--glow1':'#dfe8ff','--glow2':'#efe4ff','--shadow':'0 8px 24px rgba(30,40,90,.12)'},prev:['#eef2fb','#4f8cff','#7c5cff']},
+  amoled:{label:'AMOLED',vars:{'--bg':'#000000','--bg2':'#0a0a12','--card':'#0d0d18','--card2':'#151522','--accent':'#4f8cff','--accent2':'#7c5cff','--text':'#e8ecff','--muted':'#8a93b8','--line':'#20203a','--glow1':'#0d1030','--glow2':'#160d2e','--shadow':'0 8px 30px rgba(0,0,0,.7)'},prev:['#000000','#4f8cff','#7c5cff']},
+};
+function applyTheme(name){
+  const t=THEMES[name]||THEMES.midnight;
+  Object.entries(t.vars).forEach(([k,v])=>document.documentElement.style.setProperty(k,v));
+  document.documentElement.dataset.theme=(name==='light')?'light':'dark';
+}
+function applyMotion(){
+  document.documentElement.classList.toggle('no-anim',S.fx.motion==='reduced');
+  if(S.fx.motion==='reduced') startAmbient('off'); else startAmbient(S.fx.anim);
+}
+function openAppearance(){ renderAppearance(); document.getElementById('theme-modal').classList.add('show'); }
+function closeAppearance(){ document.getElementById('theme-modal').classList.remove('show'); }
+function renderAppearance(){
+  const tg=document.getElementById('theme-grid');tg.innerHTML='';
+  Object.keys(THEMES).forEach(k=>{
+    const t=THEMES[k];
+    const b=document.createElement('button');
+    b.className='theme-btn'+(S.fx.theme===k?' sel':'');
+    b.innerHTML=`<div class="tprev" style="background:linear-gradient(120deg,${t.prev[0]} 45%,${t.prev[1]} 45%,${t.prev[1]} 72%,${t.prev[2]} 72%)"></div>${t.label}`;
+    b.onclick=()=>{S.fx.theme=k;save();applyTheme(k);renderAppearance();sfx('good');};
+    tg.appendChild(b);
+  });
+  const ac=document.getElementById('anim-chips');ac.innerHTML='';
+  [['fireflies','✨ Fireflies'],['snow','❄️ Snow'],['stars','🌌 Stars'],['off','🚫 None']].forEach(([v,label])=>{
+    const b=document.createElement('button');
+    b.className='fchip'+(S.fx.anim===v?' active':'');
+    b.textContent=label;
+    b.onclick=()=>{S.fx.anim=v;save();if(S.fx.motion!=='reduced')startAmbient(v);renderAppearance();};
+    ac.appendChild(b);
+  });
+  const mc=document.getElementById('motion-chips');mc.innerHTML='';
+  [['full','🎬 Full animations'],['reduced','🧘 Reduced motion']].forEach(([v,label])=>{
+    const b=document.createElement('button');
+    b.className='fchip'+(S.fx.motion===v?' active':'');
+    b.textContent=label;
+    b.onclick=()=>{S.fx.motion=v;save();applyMotion();renderAppearance();};
+    mc.appendChild(b);
+  });
 }
 
 /* ---------- BUDDY — customizable mascot (name, species, color) ---------- */
@@ -4344,6 +4454,10 @@ document.getElementById('imp-file').onchange=(e)=>{
   e.target.value='';
 };
 renderCardChips();
+// appearance: apply saved theme + ambient + motion
+applyTheme(S.fx.theme);
+if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches&&S.fx.motion==='full'){S.fx.motion='reduced';}
+applyMotion();
 // live footer stats
 const as=document.getElementById('app-stats');
 if(as) as.textContent=QUESTIONS.length+' questions · '+Object.keys(PATH).length+' guided lessons · '+GLOSSARY.length+' flashcards · '+LABS.length+' labs · '+SCENARIOS.length+' scenarios';
