@@ -891,9 +891,11 @@
       <button class="tool-btn" onclick="document.getElementById('imp-file').click()">⬆ Import progress</button>
       <button class="tool-btn" onclick="shareApp()">📤 Share this app</button>
       <button class="tool-btn" onclick="startTour()">🎈 App tour</button>
+      <button class="tool-btn" onclick="shareJourney()">🏆 My journey card</button>
     </div>
     <input type="file" id="imp-file" accept=".json,application/json" style="display:none">
-    AzureQuest · 6 Microsoft certs · the whole app is ONE file — send <b>AzureQuest.html</b> to anyone (or share the link) and they get everything<br>
+    AzureQuest · 6 Microsoft certs · <span id="app-stats"></span><br>
+    the whole app is ONE file — send <b>AzureQuest.html</b> to anyone (or share the link) and they get everything<br>
     progress saves automatically in this browser · <span class="reset-link" onclick="appConfirm('Reset ALL progress? This cannot be undone.',()=>{try{localStorage.removeItem(SKEY);}catch(e){}location.reload();})">reset all progress</span>
   </footer>
 </div>
@@ -1711,6 +1713,74 @@ const QUESTIONS=[
   {cert:'sc900',topic:'Compliance',q:'Audit (Premium) adds over standard auditing:',o:['Longer retention and smarter, high-value events','Nothing','Free VMs','More emojis'],a:0,e:'Premium audit retains logs longer and captures richer events for investigations.'},
   {cert:'sc900',topic:'Compliance',q:'Preventing the M&A team from chatting with traders (conflict of interest) uses:',o:['Information barriers','A pie chart','JIT access','Elastic pools'],a:0,e:'Information barriers block communication between defined groups.'},
   {cert:'sc900',topic:'Compliance',q:'"Export all data you hold about me" is a:',o:['Data subject request (DSR)','Phishing attempt always','Backup job','DNS query'],a:0,e:'Privacy regulations grant individuals data rights; DSR tooling fulfills them.'},
+  /* ===== century wave ===== */
+  {cert:'az900',topic:'Cloud Concepts',q:'A hospital requires exclusive control of its infrastructure for regulation. Best model:',o:['Public cloud','Private cloud','Community WiFi','SaaS only'],a:1,e:'Private cloud gives one organization exclusive, controllable infrastructure.'},
+  {cert:'az900',topic:'Cloud Concepts',q:'A system that keeps running even WHILE a component fails has:',o:['Fault tolerance','Lower cost','More tags','Elastic pricing'],a:0,e:'Fault tolerance = zero interruption despite failures (redundant components).'},
+  {cert:'az900',topic:'Cloud Concepts',q:'Recovering services after a major outage is the goal of:',o:['Disaster recovery','Tagging','Autoscale','SSO'],a:0,e:'DR plans (backups, replication, failover) restore service after catastrophe.'},
+  {cert:'az900',topic:'Cloud Concepts',q:'Running normally on-prem but overflowing to public cloud at peak is:',o:['Cloud bursting (hybrid)','Private only','SaaS','Serverless'],a:0,e:'Bursting uses public cloud for peak overflow — a hybrid pattern.'},
+  {cert:'az900',topic:'Cloud Concepts',q:'A physical server dedicated ONLY to your VMs is:',o:['Azure Dedicated Host','A container','A DNS zone','Spot pricing'],a:0,e:'Dedicated Host isolates your VMs on hardware reserved for you (compliance/licensing).'},
+  {cert:'az900',topic:'Cloud Concepts',q:'Which is an OPERATING expense?',o:['Buying a server rack','The monthly Azure bill','Building a datacenter','Buying land'],a:1,e:'Recurring usage-based costs = OpEx; upfront assets = CapEx.'},
+  {cert:'az900',topic:'Architecture & Services',q:'Automating a business workflow with drag-and-drop connectors (email → approval → database) suits:',o:['Logic Apps','A VM','ExpressRoute','LRS'],a:0,e:'Logic Apps builds low-code, connector-based workflow automation.'},
+  {cert:'az900',topic:'Architecture & Services',q:'An I/O-intensive database VM should use which disk type?',o:['Standard HDD','Premium SSD (or Ultra)','Tape','Archive blobs'],a:1,e:'Premium/Ultra SSDs deliver the IOPS and latency databases need.'},
+  {cert:'az900',topic:'Architecture & Services',q:'Choosing WHICH region to deploy in is mainly driven by:',o:['Alphabetical order','Data residency/compliance and proximity to users','Icon color','Random pick'],a:1,e:'Residency laws, service availability, and latency to users drive region choice.'},
+  {cert:'az900',topic:'Architecture & Services',q:'A single remote laptop needs secure access to a VNet. Use:',o:['Point-to-Site VPN','ExpressRoute','Region pairs','A tag'],a:0,e:'P2S VPN connects individual devices; Site-to-Site connects whole networks.'},
+  {cert:'az900',topic:'Architecture & Services',q:'Serving images/video to global users from nearby edge locations uses:',o:['A CDN (e.g. Front Door/CDN profiles)','One VM in one region','A resource lock','KQL'],a:0,e:'CDNs cache content at edge points close to users, cutting latency.'},
+  {cert:'az900',topic:'Architecture & Services',q:'Objects accessed over HTTP(S) by apps (images, documents) belong in:',o:['Blob storage','Azure Files SMB','A VM disk','A queue'],a:0,e:'Blob storage is object storage with HTTP access; Files is for SMB mounting.'},
+  {cert:'az900',topic:'Architecture & Services',q:'Availability SETS protect against failures within:',o:['A single datacenter','Whole regions','Continents','Subscriptions'],a:0,e:'Sets spread across racks in one datacenter; zones span datacenters; pairs span regions.'},
+  {cert:'az900',topic:'Architecture & Services',q:'Creating a VM from the portal is an example of a:',o:['Control-plane (management) operation','Data-plane operation','Backup','DNS query'],a:0,e:'Managing resources = control plane (via ARM); using the resource\'s data = data plane.'},
+  {cert:'az900',topic:'Architecture & Services',q:'Which service pairs event PUBLISHERS with subscribers for reactive apps?',o:['Event Grid','Azure Files','Bastion','Advisor'],a:0,e:'Event Grid routes events (blob created, resource changed) to handlers.'},
+  {cert:'az900',topic:'Management & Governance',q:'Requiring MFA only for risky or external sign-ins is configured with:',o:['Conditional Access','A resource lock','Tags','A budget'],a:0,e:'Conditional Access applies if/then rules at sign-in.'},
+  {cert:'az900',topic:'Management & Governance',q:'See what you\'ve SPENT so far this month, broken down by service:',o:['Cost analysis in Cost Management','Pricing Calculator','TCO Calculator','Service Health'],a:0,e:'Cost analysis shows actual spend; calculators only estimate.'},
+  {cert:'az900',topic:'Management & Governance',q:'A policy INITIATIVE is:',o:['A single rule','A group of policies assigned together (e.g. all ISO controls)','A VM size','A support plan'],a:1,e:'Initiatives bundle related policy definitions for one assignment.'},
+  {cert:'az900',topic:'Management & Governance',q:'Microsoft\'s audit reports, compliance certifications and privacy info live on:',o:['The Service Trust Portal / Trust Center','Your invoice','GitHub','A VM'],a:0,e:'The Trust Center/Service Trust Portal documents Microsoft\'s compliance.'},
+  {cert:'az900',topic:'Management & Governance',q:'Metrics differ from logs because metrics are:',o:['Long text documents','Lightweight numeric time-series values','Screenshots','Emails'],a:1,e:'Metrics = numbers over time (CPU%); logs = detailed records queried with KQL.'},
+  {cert:'az900',topic:'Management & Governance',q:'Giving users ONLY the access their job requires is:',o:['Least privilege','Maximum privilege','Anonymous access','Bursting'],a:0,e:'Least privilege limits blast radius — core of Zero Trust.'},
+  {cert:'az900',topic:'Management & Governance',q:'Azure Blueprints / template specs help organizations:',o:['Deploy repeatable, compliant environments','Send emails','Buy hardware','Design logos'],a:0,e:'They package templates + policies + roles for repeatable governed deployments.'},
+  {cert:'dp900',topic:'Core Data Concepts',q:'"Schema-on-read" is characteristic of:',o:['A data lake','A relational table','An index','A view'],a:0,e:'Lakes store raw files; structure is applied when you read them.'},
+  {cert:'dp900',topic:'Core Data Concepts',q:'Which statement MODIFIES existing rows?',o:['UPDATE','SELECT','CREATE','GRANT'],a:0,e:'UPDATE changes existing data; it\'s DML.'},
+  {cert:'dp900',topic:'Core Data Concepts',q:'OLTP systems are optimized for:',o:['Massive scans of history','Many small concurrent reads/writes','Charts','Archives'],a:1,e:'OLTP = high-concurrency small transactions with integrity.'},
+  {cert:'dp900',topic:'Core Data Concepts',q:'Which format is human-readable text?',o:['Parquet','Avro binary','JSON','A VHD'],a:2,e:'JSON/CSV are text; Parquet/Avro are binary formats.'},
+  {cert:'dp900',topic:'Core Data Concepts',q:'A classic STREAMING data source is:',o:['IoT sensor telemetry','A yearly report','A printed form','A backup tape'],a:0,e:'Continuous device events = streaming.'},
+  {cert:'dp900',topic:'Core Data Concepts',q:'Backups, security, and performance tuning of databases belong to the:',o:['Database administrator','Graphic designer','Data analyst','Receptionist'],a:0,e:'That\'s the DBA\'s core job description.'},
+  {cert:'dp900',topic:'Core Data Concepts',q:'In batch processing, results are available:',o:['Instantly per event','After the scheduled job completes','Never','Only on Sundays'],a:1,e:'Batch = latency between data arrival and processed output.'},
+  {cert:'dp900',topic:'Core Data Concepts',q:'Product catalogs where every item has different attributes fit best in:',o:['A document database','One rigid SQL table','A queue','A metric'],a:0,e:'Flexible JSON documents handle varying attributes naturally.'},
+  {cert:'dp900',topic:'Relational Data',q:'Which constraint guarantees every row has a unique, non-null identifier?',o:['PRIMARY KEY','DEFAULT','CHECK','COMMENT'],a:0,e:'Primary key constraints enforce uniqueness and non-null.'},
+  {cert:'dp900',topic:'Relational Data',q:'A FOREIGN KEY constraint enforces:',o:['Referential integrity between tables','Faster queries always','Encryption','Backups'],a:0,e:'It ensures child rows reference existing parent rows.'},
+  {cert:'dp900',topic:'Relational Data',q:'Sorting query results uses:',o:['ORDER BY','GROUP BY','WHERE','DROP'],a:0,e:'ORDER BY sorts; GROUP BY aggregates; WHERE filters.'},
+  {cert:'dp900',topic:'Relational Data',q:'COUNT, SUM, and AVG are examples of:',o:['Aggregate functions','Tables','Indexes','Constraints'],a:0,e:'Aggregates compute one value over many rows — usually with GROUP BY.'},
+  {cert:'dp900',topic:'Relational Data',q:'With SQL Server on an Azure VM, OS patching is done by:',o:['You (IaaS responsibility)','Microsoft automatically','The DNS service','Nobody'],a:0,e:'IaaS = your OS, your patches. PaaS shifts that to Microsoft.'},
+  {cert:'dp900',topic:'Relational Data',q:'Azure SQL Database backups are:',o:['Automatic, with point-in-time restore','Manual only','Impossible','Weekly on paper'],a:0,e:'PaaS SQL includes automated backups and PITR by default.'},
+  {cert:'dp900',topic:'Relational Data',q:'Stored procedures reduce network chatter because:',o:['Logic executes server-side in one call','They compress WiFi','They delete data','They are pictures'],a:0,e:'One call runs multi-step logic at the server instead of many round trips.'},
+  {cert:'dp900',topic:'Relational Data',q:'Azure SQL Hyperscale is designed for:',o:['Very large databases with fast scaling','Tiny key-value pairs','Video editing','DNS'],a:0,e:'Hyperscale decouples storage/compute for 100TB+ databases.'},
+  {cert:'dp900',topic:'Non-relational Data',q:'Cosmos DB\'s DEFAULT consistency level is:',o:['Session','Strong','Eventual','Random'],a:0,e:'Session consistency balances performance with read-your-own-writes.'},
+  {cert:'dp900',topic:'Non-relational Data',q:'A container\'s partition key can be changed:',o:['Anytime','Effectively never — choose carefully at creation (or migrate)','Hourly','By email'],a:1,e:'Partition keys are fixed per container; changing means migrating data.'},
+  {cert:'dp900',topic:'Non-relational Data',q:'Moving a blob between Hot and Cool tiers is:',o:['Allowed anytime (per-blob or by lifecycle rule)','Forbidden','Only at creation','A DNS change'],a:0,e:'Tiers are adjustable per blob, manually or via lifecycle policies.'},
+  {cert:'dp900',topic:'Non-relational Data',q:'In Table storage, an entity is uniquely identified by:',o:['PartitionKey + RowKey','A GUID only','Its color','The URL'],a:0,e:'The PartitionKey/RowKey pair is the primary key of Table storage.'},
+  {cert:'dp900',topic:'Non-relational Data',q:'Gremlin queries work by:',o:['Traversing vertices and edges','Summing columns','Printing pages','Copying files'],a:0,e:'Graph queries walk relationships (vertices/edges) to answer connection questions.'},
+  {cert:'dp900',topic:'Non-relational Data',q:'Lifting a departmental shared drive to the cloud with minimal app changes uses:',o:['Azure Files (SMB)','A graph database','Synapse','Event Grid'],a:0,e:'Azure Files keeps the familiar mounted-share experience.'},
+  {cert:'dp900',topic:'Non-relational Data',q:'Which is TRUE about NoSQL stores generally?',o:['They require rigid schemas','They trade some relational features for scale and flexibility','They can\'t run in Azure','They only store numbers'],a:1,e:'NoSQL relaxes schema/joins to win on scale, latency, and flexibility.'},
+  {cert:'dp900',topic:'Analytics',q:'In a warehouse star schema, dimensions provide:',o:['The descriptive context (who/what/when) for facts','Raw video','Network routes','Encryption'],a:0,e:'Facts hold measures; dimensions describe them — same star as Power BI.'},
+  {cert:'dp900',topic:'Analytics',q:'Data Factory\'s Copy activity:',o:['Moves data between source and sink stores','Draws charts','Creates users','Sends SMS'],a:0,e:'Copy activity is the workhorse for ingestion between stores.'},
+  {cert:'dp900',topic:'Analytics',q:'In Data Factory, connection details for a store live in a:',o:['Linked service','Pie chart','Sensitivity label','VM'],a:0,e:'Linked services define connections; datasets point at data; activities use both.'},
+  {cert:'dp900',topic:'Analytics',q:'Teams collaborating on Spark code in Databricks use:',o:['Notebooks','Fax','Word documents','NSGs'],a:0,e:'Notebooks mix code, results, and markdown for collaborative analytics.'},
+  {cert:'dp900',topic:'Analytics',q:'The Power BI SERVICE adds what over Desktop?',o:['Sharing, apps, scheduled refresh, dashboards','Nothing','DAX','Visuals'],a:0,e:'Desktop authors; the cloud service shares, refreshes, and distributes.'},
+  {cert:'dp900',topic:'Analytics',q:'A live-updating dashboard of sensor data typically flows:',o:['Event Hubs → Stream Analytics → Power BI','CSV → email → print','Backup → restore','DNS → VM'],a:0,e:'The classic real-time path: ingest, process, visualize.'},
+  {cert:'dp900',topic:'Analytics',q:'Fabric Real-Time Intelligence (KQL databases) is optimized for:',o:['Telemetry/log analytics at speed','Word processing','Payroll printing','Icon design'],a:0,e:'KQL databases (Kusto) chew through time-series and logs — same engine as Log Analytics.'},
+  {cert:'dp900',topic:'Analytics',q:'"What happened last quarter?" vs "what WILL happen next quarter?" =',o:['Descriptive vs predictive analytics','Both descriptive','Both DNS','OLTP vs SMB'],a:0,e:'Descriptive explains the past; predictive forecasts using models.'},
+  {cert:'pl300',topic:'Prepare Data',q:'Combining 12 monthly CSVs with identical structure from one folder uses:',o:['The Folder connector (Combine files)','12 manual imports','A gauge','RLS'],a:0,e:'The folder source combines like files into one query automatically.'},
+  {cert:'pl300',topic:'Prepare Data',q:'An Excel workbook has 5 sheets; you pick which to load in:',o:['The Navigator window','The Format pane','A bookmark','The service'],a:0,e:'Navigator previews and selects sheets/tables at connection time.'},
+  {cert:'pl300',topic:'Prepare Data',q:'European-format numbers ("1.234,56") import wrong. Fix with:',o:['Change Type → Using Locale','Delete the column','A slicer','More visuals'],a:0,e:'Type-with-locale parses regional number/date formats correctly.'},
+  {cert:'pl300',topic:'Model Data (DAX)',q:'A proper date table must have:',o:['Unique, continuous dates covering the data range','Only weekends','Text dates','Random gaps'],a:0,e:'Continuous unique dates (marked as date table) make time intelligence reliable.'},
+  {cert:'pl300',topic:'Model Data (DAX)',q:'Two tables relate many-to-many. The robust modeling fix is often:',o:['A bridge table of unique keys','Deleting one table','A pie chart','Renaming columns'],a:0,e:'Bridge tables restore clean one-to-many paths and predictable filtering.'},
+  {cert:'pl300',topic:'Model Data (DAX)',q:'Show a ratio measure as "23.5%" by setting:',o:['The measure\'s format to percentage','A new gateway','RLS','Page size'],a:0,e:'Measure formatting (%, decimals, thousands) is defined once on the measure.'},
+  {cert:'pl300',topic:'Model Data (DAX)',q:'COUNTROWS(Sales) returns:',o:['The number of rows in Sales under the current filters','The sum of amounts','Column count','A date'],a:0,e:'COUNTROWS counts filtered table rows — the standard "number of orders" measure.'},
+  {cert:'pl300',topic:'Model Data (DAX)',q:'Status = IF([Sales] >= [Target], "Hit", "Miss") demonstrates:',o:['Conditional logic in DAX','Query folding','A slicer','Peering'],a:0,e:'IF branches on a condition — combine with measures for KPI logic.'},
+  {cert:'pl300',topic:'Visualize & Analyze',q:'Exploring the relationship BETWEEN two measures (price vs volume) per product uses a:',o:['Scatter chart','Card','Slicer','Donut'],a:0,e:'Scatter plots two measures on X/Y — with play axis for time.'},
+  {cert:'pl300',topic:'Visualize & Analyze',q:'Map visuals require:',o:['Geographic fields (country, city, lat/long)','A gateway','Premium only','DAX Studio'],a:0,e:'Maps need location data; categorize columns as geo for accuracy.'},
+  {cert:'pl300',topic:'Visualize & Analyze',q:'Applying corporate colors/fonts to every report consistently uses:',o:['A report theme (JSON)','Manual formatting each visual','Luck','RLS'],a:0,e:'Themes centralize brand styling across reports.'},
+  {cert:'pl300',topic:'Visualize & Analyze',q:'Quick measures are useful because they:',o:['Generate common DAX patterns for you','Replace the model','Print reports','Create users'],a:0,e:'Quick measures scaffold patterns (YTD, % of total) you can then read and learn from.'},
+  {cert:'pl300',topic:'Visualize & Analyze',q:'Q&A answers improve when the model has:',o:['Synonyms configured for fields','More pages','A bigger monitor','Longer names only'],a:0,e:'Synonyms teach Q&A your business vocabulary ("revenue" = Sales Amount).'},
+  {cert:'pl300',topic:'Manage & Secure',q:'Who can mark content as CERTIFIED?',o:['Reviewers designated by the admin','Anyone','Guests','Nobody'],a:0,e:'Certification is restricted to admin-designated reviewers; Promoted is looser.'},
 ];
 
 /* ---------- GLOSSARY (flashcards) ---------- */
@@ -3733,6 +3803,55 @@ function shareScore(){
   },'image/png');
 }
 
+/* ---------- JOURNEY CARD (Wrapped-style shareable PNG) ---------- */
+function shareJourney(){
+  const cv=document.createElement('canvas'); cv.width=1000; cv.height=700;
+  const cx=cv.getContext('2d');
+  if(cx&&!cx.roundRect) cx.roundRect=function(x,y,w,h,r){this.moveTo(x+r,y);this.arcTo(x+w,y,x+w,y+h,r);this.arcTo(x+w,y+h,x,y+h,r);this.arcTo(x,y+h,x,y,r);this.arcTo(x,y,x+w,y,r);this.closePath();};
+  const bg=cx.createLinearGradient(0,0,1000,700);
+  bg.addColorStop(0,'#0e1430'); bg.addColorStop(.55,'#1c2547'); bg.addColorStop(1,'#341a55');
+  cx.fillStyle=bg; cx.fillRect(0,0,1000,700);
+  cx.strokeStyle='#7c5cff'; cx.lineWidth=6; cx.strokeRect(12,12,976,676);
+  const nm=activeProf().name||'A future cloud pro';
+  cx.textAlign='center';
+  cx.fillStyle='#93a0c4'; cx.font='800 26px "Nunito","Segoe UI",sans-serif';
+  cx.fillText('☁️ AZUREQUEST · MY JOURNEY',500,72);
+  cx.fillStyle='#ffffff'; cx.font='900 54px "Nunito","Segoe UI",sans-serif';
+  cx.fillText(nm,500,140);
+  cx.fillStyle='#ffc800'; cx.font='800 34px "Nunito","Segoe UI",sans-serif';
+  cx.fillText('Level '+lvl(S.xp)+' · '+rankOf(lvl(S.xp)),500,192);
+  cx.fillStyle='#93a0c4'; cx.font='700 26px "Nunito","Segoe UI",sans-serif';
+  cx.fillText('⭐ '+S.xp+' XP     🔥 '+S.streak+'-day streak     🏆 '+Object.keys(S.badges||{}).length+' badges',500,240);
+  // per-cert readiness bars
+  cx.textAlign='left';
+  CERT_ORDER.forEach((c,i)=>{
+    const y=300+i*58, r=readinessOf(c);
+    cx.fillStyle='#eaf0ff'; cx.font='800 22px "Nunito","Segoe UI",sans-serif';
+    cx.fillText(icoOf(c)+' '+CERTS[c].name,80,y+8);
+    cx.fillStyle='#222c52'; cx.beginPath(); cx.roundRect(260,y-12,580,26,13); cx.fill();
+    const g=cx.createLinearGradient(260,0,840,0);
+    if(r>=85){g.addColorStop(0,'#58cc02');g.addColorStop(1,'#1cb0f6');}
+    else{g.addColorStop(0,'#4f8cff');g.addColorStop(1,'#7c5cff');}
+    cx.fillStyle=g; cx.beginPath(); cx.roundRect(260,y-12,Math.max(26,580*r/100),26,13); cx.fill();
+    cx.fillStyle='#ffffff'; cx.font='800 20px "Nunito","Segoe UI",sans-serif';
+    cx.fillText(r+'%',856,y+7);
+  });
+  cx.textAlign='center'; cx.fillStyle='#1cb0f6'; cx.font='700 24px "Nunito","Segoe UI",sans-serif';
+  cx.fillText('Start yours: tinyurl.com/azurequestapp',500,668);
+  cv.toBlob(blob=>{
+    if(!blob){toast('Could not create image');return;}
+    const file=new File([blob],'azurequest-journey.png',{type:'image/png'});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){
+      navigator.share({files:[file],title:'My AzureQuest journey'}).catch(()=>{});
+    } else {
+      const a=document.createElement('a');
+      a.href=URL.createObjectURL(blob); a.download='azurequest-journey.png'; a.click();
+      URL.revokeObjectURL(a.href);
+      toast('🏆 Journey card saved — flex it on WhatsApp!');
+    }
+  },'image/png');
+}
+
 /* ---------- FLASHCARD STUDY SESSION (know / again-later deck) ---------- */
 let DECK=null; // {queue, total, done, flipped}
 function startDeck(){
@@ -4225,6 +4344,9 @@ document.getElementById('imp-file').onchange=(e)=>{
   e.target.value='';
 };
 renderCardChips();
+// live footer stats
+const as=document.getElementById('app-stats');
+if(as) as.textContent=QUESTIONS.length+' questions · '+Object.keys(PATH).length+' guided lessons · '+GLOSSARY.length+' flashcards · '+LABS.length+' labs · '+SCENARIOS.length+' scenarios';
 // profiles
 document.getElementById('prof-chip').onclick=openProfiles;
 renderAvRow('welcome-avs',activeProf().avatar);
