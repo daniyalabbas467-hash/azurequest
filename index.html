@@ -650,6 +650,12 @@
   <!-- ROADMAP -->
   <section id="tab-roadmap" class="hidden">
     <div class="card">
+      <h2>🧭 Path Finder — which certs are right for YOU?</h2>
+      <div class="sub">Tap whatever you're into (pick as many as you like) — I'll build a recommended cert path just for that.</div>
+      <div id="pf-chips" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px"></div>
+      <div id="pf-result"></div>
+    </div>
+    <div class="card">
       <h2>💼 Why this grind pays — the job market</h2>
       <div class="sub">Certs alone don't get jobs — certs + labs + a portfolio get <b>interviews</b>. But the demand behind these six is very real:</div>
       <div id="careers"></div>
@@ -3554,6 +3560,65 @@ function vtdStep(k){
   renderVoucherTracker();
 }
 
+/* ---------- PATH FINDER (interest → recommended cert path) ---------- */
+const INTERESTS={
+  finance:{ico:'💰',label:'Finance & Business',certs:['dp900','pl300'],why:'Banks, fintech and accounting teams run on Power BI reports — data + reporting skills are gold there.'},
+  data:{ico:'📊',label:'Data & Analytics',certs:['dp900','pl300','ai900'],why:'The analyst track: understand data, master dashboards, then add AI on top.'},
+  ai:{ico:'🤖',label:'AI & Machine Learning',certs:['az900','ai900','dp900'],why:'AI runs on cloud + data — foundation first, then AI concepts, then the data layer.'},
+  security:{ico:'🛡️',label:'Security & Privacy',certs:['az900','sc900'],why:'Cyber roles want cloud basics plus security, compliance & identity fundamentals.'},
+  cloud:{ico:'☁️',label:'Cloud & IT Infrastructure',certs:['az900','az104'],why:'The classic Azure track: fundamentals, then the hands-on admin cert that gets interviews.'},
+  fresh:{ico:'🌱',label:'Not sure yet / total beginner',certs:['az900','dp900'],why:'Start broad and cheap: cloud basics + data basics reveal what you enjoy before you commit.'},
+};
+const PF_WHY={
+  az900:'Cloud foundation — every Azure path starts here',
+  az104:'Hands-on Azure admin — the job-ready role cert',
+  dp900:'How data works: storage, SQL, analytics concepts',
+  pl300:'Power BI mastery — the dashboard skill on every job ad',
+  ai900:'AI & machine learning concepts on Azure',
+  sc900:'Security, compliance & identity essentials',
+};
+const PF_WEEKS={az900:2,dp900:2,ai900:2,sc900:2,pl300:6,az104:6};
+function pfSel(){ return new Set((S.pathRec&&S.pathRec.ints)||[]); }
+function pfCerts(sel){
+  const out=[];
+  Object.keys(INTERESTS).forEach(k=>{ if(sel.has(k)) INTERESTS[k].certs.forEach(c=>{ if(!out.includes(c)) out.push(c); }); });
+  return out;
+}
+function pfToggle(k){
+  const sel=pfSel(); sel.has(k)?sel.delete(k):sel.add(k);
+  S.pathRec=Object.assign({},S.pathRec,{ints:[...sel]});
+  save(); renderPathFinder();
+}
+function pfApply(){
+  const certs=pfCerts(pfSel()); if(!certs.length)return;
+  CERT_ORDER.forEach(c=>S.tracks[c]=certs.includes(c));
+  S.pathRec.applied=true; save(); render(); renderPathFinder(); sfx('good');
+  toast('🧭 Path applied — your tracked certs now match. Head to 📚 Learn!');
+}
+function renderPathFinder(){
+  const chips=document.getElementById('pf-chips'); if(!chips)return;
+  const sel=pfSel();
+  chips.innerHTML='';
+  Object.entries(INTERESTS).forEach(([k,it])=>{
+    const b=document.createElement('button');
+    b.className='tchip'+(sel.has(k)?' on':'');
+    b.textContent=(sel.has(k)?'✓ ':'＋ ')+it.ico+' '+it.label;
+    b.onclick=()=>pfToggle(k);
+    chips.appendChild(b);
+  });
+  const box=document.getElementById('pf-result');
+  const certs=pfCerts(sel);
+  if(!certs.length){ box.innerHTML='<div class="sub" style="margin:8px 0 0">👆 Pick at least one interest to see your path.</div>'; return; }
+  const weeks=certs.reduce((a,c)=>a+PF_WEEKS[c],0);
+  const blurbs=[...sel].map(k=>`<div class="res"><div class="ri">${INTERESTS[k].ico}</div><div class="r-body"><b>${INTERESTS[k].label}</b><small>${INTERESTS[k].why}</small></div></div>`).join('');
+  const steps=certs.map((c,i)=>`<div class="res"><div class="ri">${['1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣'][i]}</div><div class="r-body"><b>${pillOf(c)} ${CERTS[c].full}</b><small>${PF_WHY[c]}</small></div></div>`).join('');
+  const applied=S.pathRec&&S.pathRec.applied&&CERT_ORDER.every(c=>!!S.tracks[c]===certs.includes(c));
+  box.innerHTML=blurbs+steps+
+    `<div class="sub" style="margin:4px 0 10px">⏱ Rough pace: ~<b>${weeks} weeks</b> at 1–2 hrs/day — fundamentals are quick wins, role certs take longer.</div>`+
+    (applied?`<div class="sub" style="margin:0">✅ This is your active path — your tracked certs match it.</div>`
+            :`<button class="btn blue" onclick="pfApply()">🧭 Make this MY path</button>`);
+}
+
 function renderTip(){
   const idx=dayNum()%TIPS.length;
   document.getElementById('tip-title').textContent=TIPS[idx].t;
@@ -4904,7 +4969,7 @@ function go(tab){
   if(tab==='exam'){ backToExamMenu(); }
   if(tab==='cards'){ endDeck(); renderCardChips(); renderFlashcards(document.getElementById('card-search').value||''); }
   if(tab==='labs'){ renderLabs(); }
-  if(tab==='roadmap')renderRoadmap();
+  if(tab==='roadmap'){ renderRoadmap(); renderPathFinder(); }
   if(tab==='badges')renderBadges();
   if(tab==='resources'){ renderResources(); renderExamDay(); }
   if(tab==='vouchers'){ renderVouchers(); }
