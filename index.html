@@ -114,6 +114,10 @@
   .res .ri{font-size:22px}
   .res .r-body{flex:1;font-size:14px}
   .res .r-body small{display:block;color:var(--muted);font-size:12px}
+  .vtd-inp{background:var(--bg2);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-weight:700;font-size:14px}
+  .vtd-inp:focus{outline:none;border-color:var(--accent)}
+  .live-dot{width:10px;height:10px;border-radius:50%;background:var(--green);flex:none;box-shadow:0 0 0 0 rgba(88,204,2,.5);animation:livepulse 2.2s infinite}
+  @keyframes livepulse{0%{box-shadow:0 0 0 0 rgba(88,204,2,.5)}70%{box-shadow:0 0 0 9px rgba(88,204,2,0)}100%{box-shadow:0 0 0 0 rgba(88,204,2,0)}}
   .hidden{display:none}
   /* Quiz */
   .quiz-card{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:20px;cursor:pointer;transition:.15s;text-align:center}
@@ -464,6 +468,7 @@
       </div>
     </div>
     <div class="stats-bar">
+      <div class="stat" title="Learners studying on AzureQuest right now"><span class="live-dot"></span><div><span class="n" id="online-n">–</span><small>studying now</small></div></div>
       <div class="stat"><span class="flame">🔥</span><div><span class="n" id="streak">0</span><small>day streak</small></div></div>
       <div class="stat">⭐<div><span class="n" id="xp">0</span><small>total XP</small></div></div>
       <div class="stat">🏅<div><span class="n" id="level">1</span><small>level</small></div></div>
@@ -486,6 +491,7 @@
     <button class="tab" data-tab="roadmap">🗺️ Roadmap</button>
     <button class="tab" data-tab="badges">🏆 Badges</button>
     <button class="tab" data-tab="resources">🔗 Resources</button>
+    <button class="tab" data-tab="vouchers">🎟️ Vouchers</button>
   </nav>
 
   <!-- HOME -->
@@ -954,6 +960,35 @@
       <h2>🎓 Exam-Day Guide</h2>
       <div class="sub">Everything about booking and sitting the real exam.</div>
       <div id="examday"></div>
+    </div>
+  </section>
+
+  <section id="tab-vouchers" class="hidden">
+    <div class="card">
+      <h2>🎟️ Exam Vouchers — pay half for the real exam</h2>
+      <div class="sub">Microsoft runs free online events called <b>Virtual Training Days</b>. Attend one → you get a <b>50% discount</b> on the matching certification exam. No catch — here's the whole thing without the confusion.</div>
+      <div class="res"><div class="ri">1️⃣</div><div class="r-body"><b>Register with the RIGHT email</b><small>Sign up for the event with the exact same email as your Microsoft Learn profile. Mismatched emails are the #1 reason people never get the discount. No Learn profile yet? Create one first, then register.</small></div></div>
+      <div class="res"><div class="ri">2️⃣</div><div class="r-body"><b>Attend the full event</b><small>Online, free, usually two half-days (~3–4 hours each). Camera off, no test at the end — but you must attend all sessions to qualify.</small></div></div>
+      <div class="res"><div class="ri">3️⃣</div><div class="r-body"><b>Wait 5–10 days</b><small>The discount gets attached to your Microsoft Learn profile. Don't hunt for a code in your inbox — it usually just appears automatically on the payment page when you schedule the exam.</small></div></div>
+      <div class="res"><div class="ri">4️⃣</div><div class="r-body"><b>Schedule within 90 days</b><small>Exam page on Microsoft Learn → “Schedule exam” → the 50% off shows at checkout. You must <b>schedule</b> within 90 days of the event — book early, the exam date itself can be later.</small></div></div>
+    </div>
+    <div class="card">
+      <h2>⚡ Find an event for your cert (one click)</h2>
+      <div class="sub">Each button opens Microsoft's event catalog pre-searched for the right Training Day. Any date works — the voucher is the same.</div>
+      <div id="vch-events"></div>
+      <a class="btn blue" href="https://www.microsoft.com/en-us/events/category/microsoft-virtual-training-days" target="_blank" style="text-decoration:none;display:inline-block;margin-top:8px">🌐 Browse all Virtual Training Days</a>
+    </div>
+    <div class="card">
+      <h2>📅 My voucher tracker</h2>
+      <div class="sub">Pick your cert and event date — I'll work out every date that matters and keep your checklist.</div>
+      <div id="vch-tracker"></div>
+    </div>
+    <div class="card">
+      <h2>⚠️ The 4 ways people lose the voucher</h2>
+      <div class="res"><div class="ri">📧</div><div class="r-body"><b>Different emails</b><small>Event registered with one email, Learn profile on another → discount never shows. Fix: use one email everywhere.</small></div></div>
+      <div class="res"><div class="ri">⏭️</div><div class="r-body"><b>Skipping sessions</b><small>Attendance is tracked. Join every session, even if you just listen in the background.</small></div></div>
+      <div class="res"><div class="ri">⏰</div><div class="r-body"><b>Missing the 90-day window</b><small>The discount expires 90 days after the event. Schedule the exam as soon as it appears.</small></div></div>
+      <div class="res"><div class="ri">🧾</div><div class="r-body"><b>Waiting for a voucher code</b><small>There often is no code — the discount applies automatically at checkout (same email!). Not there after 10 days? Contact Microsoft certification support.</small></div></div>
     </div>
   </section>
 
@@ -2815,6 +2850,7 @@ let S=load();
 S.tracks=Object.assign({az900:true,az104:true,dp900:true,pl300:true,ai900:true,sc900:true},S.tracks||{});
 S.study=S.study||{day:null,sec:0};
 S.rev=S.rev||{};
+S.vtd=S.vtd||{};
 S.days=S.days||{};
 if(S.sound===undefined)S.sound=true;
 
@@ -3458,6 +3494,63 @@ function renderResources(){
     el.innerHTML=`<div class="ri">${r.i}</div><div class="r-body"><a class="link" href="${r.u}" target="_blank">${r.t}</a><small>${r.s}</small></div>`;
     box.appendChild(el);
   });
+}
+
+/* ---------- VOUCHERS (Virtual Training Days) ---------- */
+const VTD_EVENTS=[
+  {c:'az900',q:'Azure Virtual Training Day Fundamentals',ok:true,note:'Event: “Azure Virtual Training Day: Fundamentals” → 50% off AZ-900'},
+  {c:'dp900',q:'Virtual Training Day Data Fundamentals',ok:true,note:'Event: “Azure Virtual Training Day: Data Fundamentals” → 50% off DP-900'},
+  {c:'ai900',q:'Virtual Training Day AI Fundamentals',ok:true,note:'Event: “Azure Virtual Training Day: AI Fundamentals” → 50% off AI-900'},
+  {c:'sc900',q:'Virtual Training Day Security Compliance Identity',ok:true,note:'Event: “Security, Compliance, and Identity Fundamentals” → 50% off SC-900'},
+  {c:'az104',q:'Virtual Training Day Azure Administrator',ok:false,note:'No regular voucher event for AZ-104 — watch Cloud Skills Challenges (around MS Build / Ignite), they hand out 50% vouchers for role-based exams.'},
+  {c:'pl300',q:'Virtual Training Day Power BI',ok:false,note:'Power BI / Fabric Training Days exist, but check the event page fine-print for a voucher. Cloud Skills Challenges sometimes cover PL-300 too.'},
+];
+function renderVouchers(){
+  const box=document.getElementById('vch-events'); if(!box)return;
+  box.innerHTML='';
+  VTD_EVENTS.forEach(e=>{
+    const url='https://events.microsoft.com/en-us/allevents/?search='+encodeURIComponent(e.q);
+    const el=document.createElement('div'); el.className='res';
+    el.innerHTML=`<div class="ri">${CERTS[e.c].ico}</div><div class="r-body"><b>${pillOf(e.c)} ${CERTS[e.c].full} ${e.ok?'<span class="pill boss">🎟️ 50% OFF</span>':''}</b><small>${e.note}</small></div><a class="link" href="${url}" target="_blank" style="flex:none">Find events →</a>`;
+    box.appendChild(el);
+  });
+  renderVoucherTracker();
+}
+function renderVoucherTracker(){
+  const box=document.getElementById('vch-tracker'); if(!box)return;
+  const v=S.vtd||{};
+  const opts=CERT_ORDER.map(c=>`<option value="${c}"${v.cert===c?' selected':''}>${CERTS[c].ico} ${CERTS[c].name} — ${CERTS[c].full}</option>`).join('');
+  let timeline='';
+  if(v.date){
+    const d=new Date(v.date+'T12:00:00');
+    const fmt=x=>x.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'});
+    const add=n=>new Date(d.getTime()+n*86400000);
+    const left=Math.ceil((add(90)-Date.now())/86400000);
+    timeline=
+      `<div class="res"><div class="ri">🎓</div><div class="r-body"><b>Event day</b><small>${fmt(d)} — attend every session, right email!</small></div></div>`+
+      `<div class="res"><div class="ri">🎟️</div><div class="r-body"><b>Discount should appear</b><small>${fmt(add(5))} – ${fmt(add(10))} · check the exam checkout page on Microsoft Learn</small></div></div>`+
+      `<div class="res"><div class="ri">⏰</div><div class="r-body"><b>Schedule the exam before</b><small>${fmt(add(90))}${left>=0?` · <b>${left} days left</b>`:' · window passed — grab the next event, they run every few weeks'}</small></div></div>`;
+  }
+  const st=v.steps||{};
+  const steps=[['reg','📝 Registered (same email as Microsoft Learn)'],['att','🎧 Attended all sessions'],['rec','🎟️ Discount visible at exam checkout'],['book','📅 Exam scheduled with 50% off 🎉']];
+  box.innerHTML=
+    `<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">`+
+    `<select class="vtd-inp" id="vtd-cert" onchange="vtdSet()">${opts}</select>`+
+    `<input class="vtd-inp" type="date" id="vtd-date" value="${v.date||''}" onchange="vtdSet()">`+
+    `</div>`+timeline+
+    steps.map(([k,l])=>`<div class="task${st[k]?' done':''}" onclick="vtdStep('${k}')"><div class="check">${st[k]?'✔':''}</div><div>${l}</div></div>`).join('');
+}
+function vtdSet(){
+  S.vtd=S.vtd||{};
+  S.vtd.cert=document.getElementById('vtd-cert').value;
+  S.vtd.date=document.getElementById('vtd-date').value||null;
+  save(); renderVoucherTracker();
+}
+function vtdStep(k){
+  S.vtd=S.vtd||{}; S.vtd.steps=S.vtd.steps||{};
+  S.vtd.steps[k]=!S.vtd.steps[k];
+  save(); if(S.vtd.steps[k]) sfx('good');
+  renderVoucherTracker();
 }
 
 function renderTip(){
@@ -4800,7 +4893,7 @@ if((window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||naviga
 /* ---------- TABS ---------- */
 function go(tab){
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===tab));
-  ['home','curriculum','quiz','exam','cards','labs','cheats','roadmap','badges','resources'].forEach(id=>{
+  ['home','curriculum','quiz','exam','cards','labs','cheats','insights','roadmap','badges','resources','vouchers'].forEach(id=>{
     document.getElementById('tab-'+id).classList.toggle('hidden',id!==tab);
   });
   if(tab==='cheats'){ renderCheats(); }
@@ -4813,6 +4906,7 @@ function go(tab){
   if(tab==='roadmap')renderRoadmap();
   if(tab==='badges')renderBadges();
   if(tab==='resources'){ renderResources(); renderExamDay(); }
+  if(tab==='vouchers'){ renderVouchers(); }
 }
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>go(t.dataset.tab));
 
@@ -4828,6 +4922,23 @@ updateSoundChip();
 document.getElementById('sound-chip').onclick=()=>{S.sound=(S.sound===false);save();updateSoundChip();if(S.sound!==false)sfx('good');};
 studyDayCheck(); updateStudyChip();
 document.getElementById('study-chip').onclick=toggleStudy;
+/* "studying now" presence — simulated company so studying never feels lonely (capped below 100) */
+function onlineCount(){
+  const now=new Date();
+  const h=now.getHours()+now.getMinutes()/60;
+  const base=18+70*Math.max(0,Math.sin((h-8)/16*Math.PI)); // quiet overnight, busy afternoon/evening
+  const t=Math.floor(Date.now()/25000);
+  const j=Math.sin(t*12.9898)*43758.5453; const r=j-Math.floor(j);
+  return Math.max(7,Math.min(97,Math.round(base+(r*10-5))));
+}
+let lastOnline=null;
+function tickOnline(){
+  const el=document.getElementById('online-n'); if(!el)return;
+  let n=onlineCount();
+  if(lastOnline!==null) n=Math.max(7,Math.min(97,lastOnline+Math.max(-2,Math.min(2,n-lastOnline))));
+  lastOnline=n; el.textContent=n;
+}
+tickOnline(); setInterval(tickOnline,25000);
 // import progress
 document.getElementById('imp-file').onchange=(e)=>{
   const file=e.target.files[0]; if(!file) return;
