@@ -3497,19 +3497,20 @@ function renderResources(){
 }
 
 /* ---------- VOUCHERS (Virtual Training Days) ---------- */
+const VTD_HUB='https://www.microsoft.com/en-us/events/category/microsoft-virtual-training-days';
 const VTD_EVENTS=[
-  {c:'az900',q:'Azure Virtual Training Day Fundamentals',ok:true,note:'Event: “Azure Virtual Training Day: Fundamentals” → 50% off AZ-900'},
-  {c:'dp900',q:'Virtual Training Day Data Fundamentals',ok:true,note:'Event: “Azure Virtual Training Day: Data Fundamentals” → 50% off DP-900'},
-  {c:'ai900',q:'Virtual Training Day AI Fundamentals',ok:true,note:'Event: “Azure Virtual Training Day: AI Fundamentals” → 50% off AI-900'},
-  {c:'sc900',q:'Virtual Training Day Security Compliance Identity',ok:true,note:'Event: “Security, Compliance, and Identity Fundamentals” → 50% off SC-900'},
-  {c:'az104',q:'Virtual Training Day Azure Administrator',ok:false,note:'No regular voucher event for AZ-104 — watch Cloud Skills Challenges (around MS Build / Ignite), they hand out 50% vouchers for role-based exams.'},
-  {c:'pl300',q:'Virtual Training Day Power BI',ok:false,note:'Power BI / Fabric Training Days exist, but check the event page fine-print for a voucher. Cloud Skills Challenges sometimes cover PL-300 too.'},
+  {c:'az900',f:'product:azure',ok:true,note:'Look for “Azure Virtual Training Day: Fundamentals” → 50% off AZ-900'},
+  {c:'dp900',f:'topic:data-and-analytics',ok:true,note:'Look for “…Data Fundamentals” → 50% off DP-900'},
+  {c:'ai900',f:'topic:ai',ok:true,note:'Look for “…AI Fundamentals” → 50% off AI-900'},
+  {c:'sc900',f:'topic:security',ok:true,note:'Look for “Security, Compliance, and Identity Fundamentals” → 50% off SC-900'},
+  {c:'az104',f:'product:azure',ok:false,note:'No regular voucher event for AZ-104 — watch Cloud Skills Challenges (around MS Build / Ignite), they hand out 50% vouchers for role-based exams.'},
+  {c:'pl300',f:'product:microsoft-power-platform',ok:false,note:'Power BI / Fabric Training Days exist, but check the event page fine-print for a voucher. Cloud Skills Challenges sometimes cover PL-300 too.'},
 ];
 function renderVouchers(){
   const box=document.getElementById('vch-events'); if(!box)return;
   box.innerHTML='';
   VTD_EVENTS.forEach(e=>{
-    const url='https://events.microsoft.com/en-us/allevents/?search='+encodeURIComponent(e.q);
+    const url=VTD_HUB+'?filters='+encodeURIComponent(e.f);
     const el=document.createElement('div'); el.className='res';
     el.innerHTML=`<div class="ri">${CERTS[e.c].ico}</div><div class="r-body"><b>${pillOf(e.c)} ${CERTS[e.c].full} ${e.ok?'<span class="pill boss">🎟️ 50% OFF</span>':''}</b><small>${e.note}</small></div><a class="link" href="${url}" target="_blank" style="flex:none">Find events →</a>`;
     box.appendChild(el);
